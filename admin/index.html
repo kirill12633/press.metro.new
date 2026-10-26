@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Админ-панель — Метро New International</title>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="../file/main.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f8f9fc;--bg-alt:#fff;--text:#0f172a;--text-soft:#1e293b;
+    --muted:#64748b;--muted-soft:#94a3b8;--line:#e8ecf3;--line-soft:#f1f5f9;
+    --accent:#ef4444;--accent-soft:#fee2e2;--accent-hover:#dc2626;
+    --success:#22c55e;--warning:#f59e0b;--info:#3b82f6;
+    --soft:#f1f5f9;--card:#fff;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+    --shadow:0 4px 16px rgba(15,23,42,.06);
+    --shadow-md:0 8px 24px rgba(15,23,42,.08);
+    --shadow-lg:0 16px 48px rgba(15,23,42,.12);
+    --shadow-xl:0 24px 64px rgba(15,23,42,.16);
+    --radius-sm:10px;--radius:16px;--radius-lg:24px;--radius-full:999px;
+    --sidebar-w:260px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:'cv11','ss01';}
+  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes slideRight{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+  /* ===== ЭКРАН ВХОДА ===== */
+  .login-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;background:var(--bg);}
+  @media (max-width:900px){.login-wrap{grid-template-columns:1fr;}}
+
+  .login-left{
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+    color:#fff;padding:64px 56px;display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;overflow:hidden;
+  }
+  .login-left::before{
+    content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;
+    background:radial-gradient(circle,rgba(239,68,68,.3) 0%,transparent 70%);
+    border-radius:50%;pointer-events:none;
+  }
+  .login-left::after{
+    content:'';position:absolute;bottom:-100px;left:-100px;width:300px;height:300px;
+    background:radial-gradient(circle,rgba(59,130,246,.2) 0%,transparent 70%);
+    border-radius:50%;pointer-events:none;
+  }
+  @media (max-width:900px){.login-left{padding:48px 32px;}}
+
+  .login-brand{display:flex;align-items:center;gap:14px;position:relative;z-index:2;}
+  .login-brand img{width:48px;height:48px;border-radius:12px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,.3);}
+  .login-brand-text{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.2;}
+  .login-brand-text em{font-style:normal;display:block;font-size:13px;font-weight:500;opacity:.6;letter-spacing:0;margin-top:2px;}
+
+  .login-hero{position:relative;z-index:2;margin:48px 0;}
+  .login-hero h1{font-size:clamp(28px,3.5vw,40px);font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-bottom:16px;}
+  .login-hero p{font-size:16px;opacity:.7;line-height:1.6;max-width:400px;}
+
+  .login-features{position:relative;z-index:2;display:flex;flex-direction:column;gap:16px;margin-top:32px;}
+  .login-feature{display:flex;align-items:center;gap:12px;font-size:14px;opacity:.85;}
+  .login-feature-icon{
+    width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    backdrop-filter:blur(10px);
+  }
+  .login-feature-icon svg{width:18px;height:18px;}
+
+  .login-left-footer{position:relative;z-index:2;font-size:12px;opacity:.4;display:flex;gap:16px;flex-wrap:wrap;}
+
+  .login-right{
+    padding:64px 56px;display:flex;align-items:center;justify-content:center;
+    background:var(--bg-alt);
+  }
+  @media (max-width:900px){.login-right{padding:48px 32px;}}
+
+  .login-box{width:100%;max-width:400px;animation:slideUp .5s cubic-bezier(.2,.8,.2,1);}
+  .login-box h2{font-size:28px;font-weight:800;letter-spacing:-.025em;margin-bottom:8px;}
+  .login-box .sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.5;}
+
+  .form-group{margin-bottom:20px;}
+  .form-group label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px;}
+  .form-group input{
+    width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+    font-size:15px;font-family:inherit;background:var(--bg-alt);color:var(--text);
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .form-group input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+
+  .submit-btn{
+    width:100%;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;border:none;
+    padding:16px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;
+    border-radius:var(--radius-sm);box-shadow:0 4px 16px rgba(15,23,42,.2);
+    transition:transform .15s,box-shadow .2s;min-height:52px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(15,23,42,.3);}
+  .submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .submit-btn svg{width:18px;height:18px;}
+  .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+
+  .error-msg{
+    color:var(--accent);font-size:13px;margin-top:16px;
+    padding:14px 16px;background:var(--accent-soft);border-radius:var(--radius-sm);
+    font-weight:500;display:none;line-height:1.4;
+  }
+
+  .login-help{margin-top:32px;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--muted-soft);text-align:center;line-height:1.6;}
+  .login-help a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .login-help a:hover{text-decoration:underline;}
+
+  /* ===== АДМИНКА ===== */
+  .admin-wrap{display:none;min-height:100vh;grid-template-columns:var(--sidebar-w) 1fr;background:var(--bg);}
+  .admin-wrap.active{display:grid;}
+  @media (max-width:900px){.admin-wrap{grid-template-columns:1fr;}}
+
+  /* SIDEBAR */
+  .sidebar{
+    background:#0f172a;color:#fff;padding:24px 16px;position:sticky;top:0;
+    height:100vh;display:flex;flex-direction:column;gap:8px;
+    overflow-y:auto;
+  }
+  .sidebar::-webkit-scrollbar{width:4px;}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+
+  @media (max-width:900px){
+    .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:1000;width:var(--sidebar-w);transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:4px 0 24px rgba(0,0,0,.2);}
+    .sidebar.open{transform:translateX(0);}
+  }
+
+  .sidebar-brand{display:flex;align-items:center;gap:12px;padding:8px 8px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:12px;}
+  .sidebar-brand img{width:40px;height:40px;border-radius:10px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .sidebar-brand-text{font-size:16px;font-weight:800;letter-spacing:-.02em;line-height:1.2;}
+  .sidebar-brand-text em{font-style:normal;display:block;font-size:11px;font-weight:500;opacity:.5;letter-spacing:0;margin-top:2px;}
+
+  .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .sidebar-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;
+    color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;font-weight:600;
+    font-family:inherit;background:none;border:none;cursor:pointer;text-align:left;
+    transition:background .2s,color .2s,transform .15s;min-height:44px;
+  }
+  .sidebar-item:hover{background:rgba(255,255,255,.06);color:#fff;transform:translateX(2px);}
+  .sidebar-item.active{background:rgba(239,68,68,.15);color:#fff;box-shadow:inset 3px 0 0 #ef4444;}
+  .sidebar-item svg{width:20px;height:20px;flex-shrink:0;opacity:.7;}
+  .sidebar-item.active svg{opacity:1;}
+
+  .sidebar-footer{padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:4px;}
+  .sidebar-logout{color:rgba(239,68,68,.8);}
+  .sidebar-logout:hover{background:rgba(239,68,68,.15);color:#ef4444;}
+
+  /* MAIN */
+  .main{padding:24px 32px 64px;overflow-x:hidden;}
+  @media (max-width:900px){.main{padding:16px 16px 48px;}}
+
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    padding-bottom:20px;margin-bottom:24px;border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .topbar-left{display:flex;align-items:center;gap:12px;}
+  .burger{
+    display:none;background:var(--bg-alt);border:1.5px solid var(--line);
+    width:44px;height:44px;border-radius:10px;cursor:pointer;color:var(--text);
+    font-family:inherit;align-items:center;justify-content:center;
+  }
+  @media (max-width:900px){.burger{display:flex;}}
+  .burger svg{width:22px;height:22px;}
+
+  .topbar h1{font-size:24px;font-weight:800;letter-spacing:-.025em;}
+  .topbar-actions{display:flex;gap:8px;align-items:center;}
+
+  .user-chip{
+    display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;
+    background:var(--bg-alt);border:1.5px solid var(--line);border-radius:var(--radius-full);
+    font-size:13px;font-weight:600;color:var(--text-soft);
+  }
+  .user-avatar{
+    width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;
+  }
+
+  /* СТАТИСТИКА */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+  .stat-card{
+    background:var(--card);border-radius:var(--radius);padding:20px;
+    box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .3s;
+    animation:fadeInUp .4s both;
+  }
+  .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+  .stat-icon{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:14px;
+  }
+  .stat-icon svg{width:22px;height:22px;color:#fff;}
+  .stat-icon.red{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 12px rgba(239,68,68,.3);}
+  .stat-icon.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 4px 12px rgba(59,130,246,.3);}
+  .stat-icon.green{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(34,197,94,.3);}
+  .stat-icon.orange{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 4px 12px rgba(245,158,11,.3);}
+  .stat-value{font-size:32px;font-weight:900;letter-spacing:-.03em;line-height:1;margin-bottom:4px;}
+  .stat-label{font-size:13px;color:var(--muted);font-weight:600;}
+
+  /* ФОРМА */
+  .section-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+  .section-title svg{width:22px;height:22px;color:var(--accent);}
+
+  .form-card{background:var(--card);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow);margin-bottom:32px;animation:fadeInUp .5s both;}
+  .form-card form{display:flex;flex-direction:column;gap:16px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:640px){.form-row{grid-template-columns:1fr;}}
+
+  .form-group{margin-bottom:0;}
+  .form-group label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px;}
+  .form-group input,.form-group textarea,.form-group select{
+    width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+    font-size:15px;font-family:inherit;background:var(--bg-alt);color:var(--text);
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+
+  .image-upload{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .image-upload input[type=file]{display:none;}
+  .upload-btn{background:var(--bg-alt);border:1.5px dashed var(--line);color:var(--muted);padding:12px 20px;font-size:13px;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);font-weight:600;transition:border-color .2s,color .2s,background .2s;display:inline-flex;align-items:center;gap:8px;}
+  .upload-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  .upload-btn svg{width:16px;height:16px;}
+  .upload-preview{width:88px;height:88px;background:var(--soft);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:11px;text-align:center;flex-shrink:0;border-radius:var(--radius-sm);font-weight:600;}
+  .upload-preview img{width:100%;height:100%;object-fit:cover;}
+
+  .md-tabs{display:flex;gap:8px;margin-bottom:10px;}
+  .md-tab{padding:8px 16px;font-size:12px;font-weight:700;border:1.5px solid var(--line);background:var(--bg-alt);cursor:pointer;font-family:inherit;color:var(--muted);border-radius:var(--radius-full);transition:background .2s,color .2s,border-color .2s;min-height:36px;}
+  .md-tab.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .md-help{font-size:12px;color:var(--muted-soft);margin-top:8px;line-height:1.5;}
+
+  .checkbox-row{display:flex;gap:20px;flex-wrap:wrap;margin:8px 0;}
+  .checkbox-label{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;cursor:pointer;user-select:none;padding:10px 14px;background:var(--soft);border-radius:var(--radius-sm);transition:background .2s;}
+  .checkbox-label:hover{background:var(--line-soft);}
+  .checkbox-label input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;}
+
+  .submit-btn.primary{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+    box-shadow:0 4px 16px rgba(239,68,68,.3);
+    max-width:240px;
+  }
+  .submit-btn.primary:hover:not(:disabled){box-shadow:0 8px 24px rgba(239,68,68,.4);}
+
+  /* СПИСОК */
+  .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+  .list-count{font-size:13px;color:var(--muted);font-weight:600;padding:6px 12px;background:var(--soft);border-radius:var(--radius-full);}
+  .list-count strong{color:var(--text);}
+
+  .admin-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+  .admin-item{
+    background:var(--card);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .3s;
+    animation:fadeInUp .4s both;display:flex;flex-direction:column;
+  }
+  .admin-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+  .admin-item-img{aspect-ratio:16/9;background:var(--soft);overflow:hidden;position:relative;}
+  .admin-item-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .admin-item-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;}
+  .admin-badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:var(--radius-full);letter-spacing:.05em;text-transform:uppercase;backdrop-filter:blur(10px);}
+  .admin-badge.urgent{background:rgba(220,38,38,.95);color:#fff;}
+  .admin-badge.new{background:rgba(34,197,94,.95);color:#fff;}
+  .admin-badge.cat{background:rgba(255,255,255,.95);color:#0f172a;}
+  .admin-item-body{padding:16px 18px 20px;flex:1;display:flex;flex-direction:column;gap:8px;}
+  .admin-item-title{font-size:15px;font-weight:700;line-height:1.3;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .admin-item-meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .admin-item-meta svg{width:12px;height:12px;opacity:.6;}
+  .admin-item-actions{margin-top:auto;padding-top:12px;border-top:1px solid var(--line-soft);display:flex;gap:8px;}
+  .action-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--soft);border:none;color:var(--text-soft);padding:10px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);transition:background .2s,color .2s,transform .15s;min-height:38px;}
+  .action-btn:hover{background:var(--line);transform:translateY(-1px);}
+  .action-btn.danger{background:var(--accent-soft);color:var(--accent);}
+  .action-btn.danger:hover{background:var(--accent);color:#fff;}
+  .action-btn svg{width:14px;height:14px;}
+
+  .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);background:var(--card);border-radius:var(--radius);border:2px dashed var(--line);}
+  .empty-icon{width:64px;height:64px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .empty-icon svg{width:28px;height:28px;color:var(--muted-soft);}
+  .empty h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .empty p{font-size:14px;}
+
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:999;backdrop-filter:blur(4px);}
+  @media (max-width:900px){.sidebar-overlay.open{display:block;}}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ЭКРАН ВХОДА -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-left">
+    <div class="login-brand">
+      <img src="../file/main.png" alt="Метро New">
+      <div class="login-brand-text">
+        Метро New
+        <em>International</em>
+      </div>
+    </div>
+
+    <div class="login-hero">
+      <h1>Панель управления редакцией</h1>
+      <p>Публикуйте новости, добавляйте видео и управляйте вакансиями — всё в одном месте.</p>
+    </div>
+
+    <div class="login-features">
+      <div class="login-feature">
+        <div class="login-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <span>Новости с Markdown и фото</span>
+      </div>
+      <div class="login-feature">
+        <div class="login-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+        <span>LIVE, репортажи и вертикали</span>
+      </div>
+      <div class="login-feature">
+        <div class="login-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+        <span>Вакансии и статистика</span>
+      </div>
+    </div>
+
+    <div class="login-left-footer">
+      <span>© <span id="copyYear"></span> Метро New International</span>
+      <a href="../" style="color:inherit;text-decoration:none;">← На главную</a>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-box">
+      <h2>Вход для админа</h2>
+      <p class="sub">Введите email и пароль администратора, чтобы продолжить.</p>
+      <form onsubmit="handleLogin(event)" id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="admin@metro.new" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="submit-btn" id="loginSubmitBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Войти
+        </button>
+        <div class="error-msg" id="loginError" role="alert"></div>
+      </form>
+      <div class="login-help">
+        Забыли пароль? Обратитесь к администратору проекта.<br>
+        <a href="../">← Вернуться на сайт</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- АДМИНКА -->
+<div class="admin-wrap" id="adminScreen">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="../file/main.png" alt="Метро New">
+      <div class="sidebar-brand-text">
+        Метро New
+        <em>Админ-панель</em>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" data-tab="news" onclick="adminTab('news')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Новости
+      </button>
+      <button class="sidebar-item" data-tab="videos" onclick="adminTab('videos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Видео
+      </button>
+      <button class="sidebar-item" data-tab="jobs" onclick="adminTab('jobs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Вакансии
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="sidebar-item" href="../">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+        На сайт
+      </a>
+      <button class="sidebar-item sidebar-logout" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="burger" onclick="openSidebar()" aria-label="Меню">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h1 id="pageTitle">Новости</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <div class="user-avatar">A</div>
+          <span>Админ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- КОНТЕНТ -->
+    <div id="adminContent"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://sykrarmpxorjdwglgftq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_kXF-MxD6dZhOw3qJNSSqeg__Z7KUT26';
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const YT_ID = /^[A-Za-z0-9_\-]{11}$/;
+const isValidYT = id => YT_ID.test(id);
+
+const CATEGORY_NAMES = {world:'Мир', tech:'Технологии', culture:'Культура', sport:'Спорт', weather:'Погода', other:'Другое'};
+const catName = slug => CATEGORY_NAMES[slug] || 'Другое';
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const fmtDate = d => new Date(d).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+
+function renderMarkdown(md){
+  const rawHtml = window.marked.parse(md || '', {breaks:true, gfm:true});
+  return window.DOMPurify.sanitize(rawHtml, {ADD_ATTR:['target']});
+}
+
+document.getElementById('copyYear').textContent = new Date().getFullYear();
+
+let currentTab = 'news';
+
+/* ===== UI ===== */
+function showLogin(){
+  document.getElementById('loginScreen').style.display = 'grid';
+  document.getElementById('adminScreen').classList.remove('active');
+  setTimeout(()=>document.getElementById('loginEmail').focus(), 100);
+}
+
+function showAdminUI(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminScreen').classList.add('active');
+  adminTab(currentTab);
+}
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+/* ===== ВХОД ===== */
+async function handleLogin(e){
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginSubmitBtn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Проверка...';
+
+  try {
+    const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
+    if(authError){
+      errEl.textContent = 'Неверный email или пароль';
+      errEl.style.display = 'block';
+      return;
+    }
+    const { data: adminRow, error: adminErr } = await db.from('admins').select('uid').eq('user_id', authData.user.id).maybeSingle();
+    if(adminErr || !adminRow){
+      await db.auth.signOut();
+      errEl.textContent = adminErr ? 'Ошибка доступа к базе' : 'У вас нет прав администратора';
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('loginPassword').value = '';
+    showAdminUI();
+  } catch(err){
+    console.error(err);
+    errEl.textContent = 'Ошибка соединения';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Войти';
+  }
+}
+
+async function logout(){
+  await db.auth.signOut();
+  currentTab = 'news';
+  showLogin();
+}
+
+/* ===== СТАТИСТИКА ===== */
+async function loadStats(){
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = '<div class="stat-card"><div class="stat-label">Загрузка...</div></div>';
+
+  try {
+    const [newsRes, videosRes, jobsRes, urgentRes] = await Promise.all([
+      db.from('news').select('id', {count:'exact', head:true}),
+      db.from('videos').select('id', {count:'exact', head:true}),
+      db.from('jobs').select('id', {count:'exact', head:true}),
+      db.from('news').select('id', {count:'exact', head:true}).eq('is_urgent', true)
+    ]);
+
+    grid.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="stat-value">${newsRes.count || 0}</div>
+        <div class="stat-label">Новостей</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+        <div class="stat-value">${videosRes.count || 0}</div>
+        <div class="stat-label">Видео</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+        <div class="stat-value">${jobsRes.count || 0}</div>
+        <div class="stat-label">Вакансий</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="stat-value">${urgentRes.count || 0}</div>
+        <div class="stat-label">Срочных</div>
+      </div>
+    `;
+  } catch(err){
+    console.error('loadStats:', err);
+    grid.innerHTML = '';
+  }
+}
+
+/* ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ===== */
+function adminTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.sidebar-item[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  const titles = {news:'Новости', videos:'Видео', jobs:'Вакансии'};
+  document.getElementById('pageTitle').textContent = titles[tab] || 'Админ-панель';
+  closeSidebar();
+  loadStats();
+
+  const el = document.getElementById('adminContent');
+
+  if(tab==='news'){
+    el.innerHTML = `
+      <div class="form-card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить новость
+        </div>
+        <form onsubmit="addNews(event)" id="newsForm">
+          <div class="form-row">
+            <div class="form-group"><label for="nCat">Рубрика</label><select id="nCat"><option value="world">Мир</option><option value="tech">Технологии</option><option value="culture">Культура</option><option value="sport">Спорт</option><option value="weather">Погода</option><option value="other">Другое</option></select></div>
+            <div class="form-group"><label for="nAuthor">Автор</label><input id="nAuthor" placeholder="Редакция Метро New" value="Редакция Метро New"></div>
+          </div>
+          <div class="form-group"><label for="nTitle">Заголовок</label><input id="nTitle" placeholder="О чём новость?" required></div>
+          <div class="form-group"><label for="nExcerpt">Краткое описание</label><textarea id="nExcerpt" rows="2" placeholder="1–2 предложения для карточки"></textarea></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Обложка новости</label>
+              <div class="image-upload">
+                <label class="upload-btn" for="nCover">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Выбрать файл
+                </label>
+                <input type="file" id="nCover" accept="image/*" onchange="previewCover(this)">
+                <div class="upload-preview" id="nCoverPreview">Нет фото</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Фото автора</label>
+              <div class="image-upload">
+                <label class="upload-btn" for="nAvatar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+                  Выбрать файл
+                </label>
+                <input type="file" id="nAvatar" accept="image/*" onchange="previewAvatar(this)">
+                <div class="upload-preview" id="nAvatarPreview">Нет фото</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Текст новости (Markdown)</label>
+            <div class="md-tabs">
+              <button type="button" class="md-tab active" onclick="mdTab(this,'edit')">Редактор</button>
+              <button type="button" class="md-tab" onclick="mdTab(this,'preview')">Предпросмотр</button>
+            </div>
+            <textarea id="nBody" rows="12" style="font-family:monospace;font-size:14px;" placeholder="# Заголовок&#10;&#10;Текст новости...&#10;&#10;**Жирный** и *курсив*&#10;&#10;- Список&#10;- Пункты"></textarea>
+            <div id="nBodyPreview" style="display:none;background:var(--bg);padding:20px;margin-top:12px;border-radius:var(--radius-sm);border:1.5px solid var(--line);min-height:200px;"></div>
+            <p class="md-help">Поддерживается: **жирный**, *курсив*, # заголовок, - список, [ссылка](url), ![фото](url), &gt; цитата</p>
+          </div>
+          <div class="checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" id="nNew"> Пометка NEW</label>
+            <label class="checkbox-label"><input type="checkbox" id="nUrgent"> 🔴 Срочная новость</label>
+          </div>
+          <button type="submit" class="submit-btn primary">Опубликовать</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <div class="section-title" style="margin:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Все новости
+        </div>
+        <div class="list-count" id="newsCount"></div>
+      </div>
+      <div class="admin-list" id="adminList"></div>`;
+    loadAdminNews();
+  } else if(tab==='videos'){
+    el.innerHTML = `
+      <div class="form-card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить видео
+        </div>
+        <form onsubmit="addVideo(event)">
+          <div class="form-row">
+            <div class="form-group"><label for="vType">Тип</label><select id="vType"><option value="live">LIVE-трансляция</option><option value="report">Репортаж</option><option value="vertical">Вертикаль</option></select></div>
+            <div class="form-group"><label for="vDur">Длительность</label><input id="vDur" placeholder="12:34 / LIVE"></div>
+          </div>
+          <div class="form-group"><label for="vId">YouTube ID (11 символов)</label><input id="vId" placeholder="dQw4w9WgXcQ" required pattern="[A-Za-z0-9_\\-]{11}"><p class="md-help">Из ссылки youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong></p></div>
+          <div class="form-group"><label for="vTitle">Заголовок</label><input id="vTitle" placeholder="О чём видео?" required></div>
+          <div class="form-group"><label for="vShort">Короткое описание</label><input id="vShort" placeholder="1 предложение"></div>
+          <div class="form-group">
+            <label>Своя обложка (необязательно)</label>
+            <div class="image-upload">
+              <label class="upload-btn" for="vCover">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Выбрать файл
+              </label>
+              <input type="file" id="vCover" accept="image/*" onchange="previewVideoCover(this)">
+              <div class="upload-preview" id="vCoverPreview">Нет фото</div>
+            </div>
+            <p class="md-help">Если не загрузить — возьмётся обложка YouTube</p>
+          </div>
+          <div class="checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" id="vLive"> Прямой эфир</label>
+          </div>
+          <button type="submit" class="submit-btn primary">Добавить видео</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <div class="section-title" style="margin:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          Все видео
+        </div>
+        <div class="list-count" id="videosCount"></div>
+      </div>
+      <div class="admin-list" id="adminList"></div>`;
+    loadAdminVideos();
+  } else if(tab==='jobs'){
+    el.innerHTML = `
+      <div class="form-card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить вакансию
+        </div>
+        <form onsubmit="addJob(event)">
+          <div class="form-group"><label for="jTitle">Название вакансии</label><input id="jTitle" placeholder="Например: Редактор новостей" required></div>
+          <div class="form-row">
+            <div class="form-group"><label for="jType">Тип занятости</label><input id="jType" placeholder="Полная / частичная"></div>
+            <div class="form-group"><label for="jLoc">Локация</label><input id="jLoc" placeholder="Удалённо / офис"></div>
+          </div>
+          <button type="submit" class="submit-btn primary">Добавить вакансию</button>
+        </form>
+      </div>
+      <div class="list-header">
+        <div class="section-title" style="margin:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Все вакансии
+        </div>
+        <div class="list-count" id="jobsCount"></div>
+      </div>
+      <div class="admin-list" id="adminList"></div>`;
+    loadAdminJobs();
+  }
+}
+
+/* ===== ЗАГРУЗКА ФОТО ===== */
+async function uploadImage(file){
+  if(!file) throw new Error('Файл не выбран');
+  const ext = file.name.split('.').pop().toLowerCase();
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await db.storage.from('news-images').upload(name, file);
+  if(error) throw error;
+  const { data } = db.storage.from('news-images').getPublicUrl(name);
+  return data.publicUrl;
+}
+
+function previewCover(input){ const box = document.getElementById('nCoverPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
+function previewAvatar(input){ const box = document.getElementById('nAvatarPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
+function previewVideoCover(input){ const box = document.getElementById('vCoverPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
+
+function mdTab(btn, mode){
+  document.querySelectorAll('.md-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const ta = document.getElementById('nBody');
+  const prev = document.getElementById('nBodyPreview');
+  if(mode==='preview'){ ta.style.display = 'none'; prev.style.display = 'block'; prev.className = 'article-body'; prev.innerHTML = renderMarkdown(ta.value); }
+  else { ta.style.display = 'block'; prev.style.display = 'none'; }
+}
+
+function adminError(action, error){ console.error(action, error); alert('Не удалось выполнить: ' + (error.message || 'сессия истекла')); }
+
+/* ===== НОВОСТИ ===== */
+async function loadAdminNews(){
+  const { data, error } = await db.from('news').select('*').order('published_at',{ascending:false});
+  const list = document.getElementById('adminList');
+  const count = document.getElementById('newsCount');
+  if(!list) return;
+  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
+  if(count) count.innerHTML = `<strong>${(data||[]).length}</strong> записей`;
+  if(!data || !data.length){
+    list.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>Пока нет новостей</h3><p>Добавьте первую через форму выше</p></div>`;
+    return;
+  }
+  list.innerHTML = data.map(n=>`
+    <div class="admin-item">
+      ${n.cover_image?`<div class="admin-item-img"><img src="${escapeHtml(n.cover_image)}" alt="" loading="lazy"><div class="admin-item-badges">${n.is_urgent?'<span class="admin-badge urgent">Срочно</span>':''}${n.is_new?'<span class="admin-badge new">NEW</span>':''}<span class="admin-badge cat">${escapeHtml(catName(n.category_slug))}</span></div></div>`:'<div class="admin-item-img" style="display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:12px;font-weight:600;">Без обложки</div>'}
+      <div class="admin-item-body">
+        <div class="admin-item-title">${escapeHtml(n.title)}</div>
+        <div class="admin-item-meta"><span>${fmtDate(n.published_at)}</span>${n.author?`<span>· ${escapeHtml(n.author)}</span>`:''}</div>
+        <div class="admin-item-actions">
+          <a class="action-btn" href="../?article=${n.id}" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Открыть</a>
+          <button class="action-btn danger" onclick="deleteNews(${Number(n.id)})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function addNews(e){
+  e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('.submit-btn');
+  const origHtml = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<div class="spinner"></div> Публикация...';
+  try {
+    let coverUrl = null;
+    let avatarUrl = null;
+    const coverFile = document.getElementById('nCover').files[0];
+    if(coverFile) coverUrl = await uploadImage(coverFile);
+    const avatarFile = document.getElementById('nAvatar').files[0];
+    if(avatarFile) avatarUrl = await uploadImage(avatarFile);
+    const { error } = await db.from('news').insert({
+      category_slug: document.getElementById('nCat').value,
+      title: document.getElementById('nTitle').value,
+      excerpt: document.getElementById('nExcerpt').value,
+      body: document.getElementById('nBody').value,
+      cover_image: coverUrl,
+      author: document.getElementById('nAuthor').value || 'Редакция Метро New',
+      author_avatar: avatarUrl,
+      is_new: document.getElementById('nNew').checked,
+      is_urgent: document.getElementById('nUrgent').checked
+    });
+    if(error) throw error;
+    form.reset();
+    document.getElementById('nCoverPreview').innerHTML = 'Нет фото';
+    document.getElementById('nAvatarPreview').innerHTML = 'Нет фото';
+    loadAdminNews();
+    loadStats();
+    alert('✅ Новость опубликована');
+  } catch(err){
+    adminError('addNews', err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = origHtml;
+  }
+}
+
+async function deleteNews(id){
+  if(!confirm('Удалить эту новость? Это действие нельзя отменить.')) return;
+  const { error } = await db.from('news').delete().eq('id',id);
+  if(error) return adminError('deleteNews', error);
+  loadAdminNews();
+  loadStats();
+}
+
+/* ===== ВИДЕО ===== */
+async function loadAdminVideos(){
+  const { data, error } = await db.from('videos').select('*').order('sort_order');
+  const list = document.getElementById('adminList');
+  const count = document.getElementById('videosCount');
+  if(!list) return;
+  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
+  if(count) count.innerHTML = `<strong>${(data||[]).length}</strong> записей`;
+  if(!data || !data.length){
+    list.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div><h3>Пока нет видео</h3><p>Добавьте первое через форму выше</p></div>`;
+    return;
+  }
+  const typeLabels = {live:'LIVE', report:'Репортаж', vertical:'Вертикаль'};
+  const typeColors = {live:'urgent', report:'new', vertical:'cat'};
+  list.innerHTML = data.map(v=>`
+    <div class="admin-item">
+      <div class="admin-item-img">
+        <img src="${escapeHtml(v.cover_image || `https://img.youtube.com/vi/${v.video_id}/maxresdefault.jpg`)}" alt="" loading="lazy" onerror="this.src='https://img.youtube.com/vi/${v.video_id}/hqdefault.jpg'">
+        <div class="admin-item-badges"><span class="admin-badge ${typeColors[v.type]}">${typeLabels[v.type]||v.type}</span></div>
+      </div>
+      <div class="admin-item-body">
+        <div class="admin-item-title">${escapeHtml(v.title)}</div>
+        <div class="admin-item-meta"><span>${escapeHtml(v.duration||'—')}</span><span>· ${escapeHtml(v.video_id)}</span></div>
+        <div class="admin-item-actions">
+          <a class="action-btn" href="../?video=${v.video_id}" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Открыть</a>
+          <button class="action-btn danger" onclick="deleteVideo(${Number(v.id)})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function addVideo(e){
+  e.preventDefault();
+  const form = e.target;
+  const videoId = document.getElementById('vId').value.trim();
+  if(!isValidYT(videoId)) return alert('YouTube ID должен быть 11 символов');
+  const submitBtn = form.querySelector('.submit-btn');
+  const origHtml = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<div class="spinner"></div> Добавление...';
+  try {
+    let coverUrl = null;
+    const coverFile = document.getElementById('vCover').files[0];
+    if(coverFile) coverUrl = await uploadImage(coverFile);
+    const { error } = await db.from('videos').insert({
+      type: document.getElementById('vType').value,
+      video_id: videoId,
+      title: document.getElementById('vTitle').value,
+      short: document.getElementById('vShort').value,
+      duration: document.getElementById('vDur').value,
+      is_live: document.getElementById('vLive').checked,
+      cover_image: coverUrl
+    });
+    if(error) throw error;
+    form.reset();
+    document.getElementById('vCoverPreview').innerHTML = 'Нет фото';
+    loadAdminVideos();
+    loadStats();
+    alert('✅ Видео добавлено');
+  } catch(err){
+    adminError('addVideo', err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = origHtml;
+  }
+}
+
+async function deleteVideo(id){
+  if(!confirm('Удалить это видео?')) return;
+  const { error } = await db.from('videos').delete().eq('id',id);
+  if(error) return adminError('deleteVideo', error);
+  loadAdminVideos();
+  loadStats();
+}
+
+/* ===== ВАКАНСИИ ===== */
+async function loadAdminJobs(){
+  const { data, error } = await db.from('jobs').select('*').order('created_at',{ascending:false});
+  const list = document.getElementById('adminList');
+  const count = document.getElementById('jobsCount');
+  if(!list) return;
+  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
+  if(count) count.innerHTML = `<strong>${(data||[]).length}</strong> записей`;
+  if(!data || !data.length){
+    list.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><h3>Пока нет вакансий</h3><p>Добавьте первую через форму выше</p></div>`;
+    return;
+  }
+  list.innerHTML = data.map(j=>`
+    <div class="admin-item">
+      <div class="admin-item-body">
+        <div class="admin-item-title">${escapeHtml(j.title)}</div>
+        <div class="admin-item-meta"><span>${escapeHtml(j.type||'—')}</span><span>· ${escapeHtml(j.location||'—')}</span></div>
+        <div class="admin-item-actions">
+          <button class="action-btn danger" onclick="deleteJob(${Number(j.id)})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function addJob(e){
+  e.preventDefault();
+  const form = e.target;
+  const { error } = await db.from('jobs').insert({
+    title: document.getElementById('jTitle').value,
+    type: document.getElementById('jType').value,
+    location: document.getElementById('jLoc').value
+  });
+  if(error) return adminError('addJob', error);
+  form.reset();
+  loadAdminJobs();
+  loadStats();
+  alert('✅ Вакансия добавлена');
+}
+
+async function deleteJob(id){
+  if(!confirm('Удалить эту вакансию?')) return;
+  const { error } = await db.from('jobs').delete().eq('id',id);
+  if(error) return adminError('deleteJob', error);
+  loadAdminJobs();
+  loadStats();
+}
+
+/* ===== ПРОВЕРКА СЕССИИ ===== */
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if(session){
+    const { data } = await db.from('admins').select('uid').eq('user_id', session.user.id).maybeSingle();
+    if(data){ showAdminUI(); return; }
+  }
+  showLogin();
+})();
+
+db.auth.onAuthStateChange((event, session) => {
+  setTimeout(async () => {
+    if(event === 'SIGNED_OUT') return showLogin();
+    if(session){
+      const { data } = await db.from('admins').select('uid').eq('user_id', session.user.id).maybeSingle();
+      if(data) showAdminUI();
+    }
+  }, 0);
+});
+</script>
+</body>
+</html>
