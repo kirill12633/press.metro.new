@@ -21,8 +21,7 @@
     --bg:#f8f9fc;--bg-alt:#fff;--text:#0f172a;--text-soft:#1e293b;
     --muted:#64748b;--muted-soft:#94a3b8;--line:#e8ecf3;--line-soft:#f1f5f9;
     --accent:#ef4444;--accent-soft:#fee2e2;--accent-hover:#dc2626;
-    --urgent:#dc2626;--urgent-soft:#fee2e2;
-    --live:#ef4444;--metro:#3b82f6;--success:#22c55e;--soft:#f1f5f9;--card:#fff;
+    --urgent:#dc2626;--live:#ef4444;--soft:#f1f5f9;--card:#fff;
     --shadow-sm:0 1px 2px rgba(15,23,42,.04);
     --shadow:0 4px 16px rgba(15,23,42,.06);
     --shadow-md:0 8px 24px rgba(15,23,42,.08);
@@ -47,6 +46,7 @@
   @keyframes scaleIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
   @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
   @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes vfsHint{0%{opacity:0;transform:translateX(-50%) translateY(10px);}15%{opacity:1;transform:translateX(-50%) translateY(0);}85%{opacity:1;}100%{opacity:0;}}
 
   .skeleton{background:linear-gradient(90deg,#eef2f8 0%,#f8fafc 50%,#eef2f8 100%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-sm);}
   .skel-card{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);}
@@ -57,8 +57,7 @@
   .skel-line.med{width:70%;}
   .skel-line.tall{height:20px;}
 
-  .scroll-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#ef4444,#dc2626);width:0;z-index:200;transition:width .1s linear;box-shadow:0 0 8px rgba(239,68,68,.5);}
-
+  /* ШАПКА */
   header{background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;}
   .header-top{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:16px;}
   .logo{font-size:19px;font-weight:800;letter-spacing:-.03em;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px;transition:opacity .2s;}
@@ -70,12 +69,8 @@
   .icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:var(--bg-alt);border:1.5px solid var(--line);border-radius:var(--radius-full);color:var(--muted);cursor:pointer;font-family:inherit;transition:background .2s,color .2s,border-color .2s,transform .2s;}
   .icon-btn:hover{background:var(--soft);color:var(--text);border-color:var(--text);transform:translateY(-1px);}
   .icon-btn svg{width:18px;height:18px;}
-  .login-btn{background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;border:none;padding:12px 22px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;border-radius:var(--radius-full);box-shadow:0 2px 8px rgba(15,23,42,.15);transition:transform .15s,box-shadow .2s;min-height:44px;}
-  .login-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,23,42,.22);}
-  .admin-btn{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 2px 8px rgba(239,68,68,.3);}
-  .logout-btn{background:#fff;color:var(--text-soft);border:1px solid var(--line);box-shadow:var(--shadow-sm);}
 
-  /* STICKY-НАВИГАЦИЯ (усиленная) */
+  /* STICKY-НАВИГАЦИЯ */
   .nav-wrap{position:sticky;top:var(--header-h);z-index:99;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);transition:box-shadow .3s,background .3s;}
   .nav-wrap.scrolled{box-shadow:0 4px 20px rgba(15,23,42,.08);background:rgba(255,255,255,.98);}
   nav ul{display:flex;gap:6px;list-style:none;overflow-x:auto;scrollbar-width:none;padding:10px 0;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
@@ -110,7 +105,7 @@
   .section-title{display:flex;justify-content:space-between;align-items:center;font-size:13px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--muted);padding:56px 0 0;}
   .section-title::after{content:'';flex:1;height:1px;background:var(--line);margin-left:20px;}
 
-  /* ===== ФИЛЬТР ПО ДАТЕ ===== */
+  /* ФИЛЬТР ПО ДАТЕ */
   .date-filter{display:flex;gap:8px;padding:32px 0 24px;flex-wrap:wrap;align-items:center;}
   .date-filter-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--muted);margin-right:8px;}
   .date-chip{padding:8px 16px;background:var(--bg-alt);border:1.5px solid var(--line);border-radius:var(--radius-full);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--muted);transition:background .2s,color .2s,border-color .2s,transform .2s;min-height:40px;display:inline-flex;align-items:center;gap:6px;}
@@ -174,7 +169,7 @@
   .report-content p{font-size:14px;color:var(--muted);}
   .report-meta{font-size:12px;color:var(--muted-soft);text-align:right;white-space:nowrap;font-weight:500;}
 
-  /* ВЕРТИКАЛИ (тизер) */
+  /* ВЕРТИКАЛИ */
   .verticals-section{padding:56px 0 72px;}
   .verticals-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
   .verticals-header .see-all{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--accent-soft);border-radius:var(--radius-full);transition:background .2s,color .2s,transform .2s;min-height:44px;}
@@ -193,7 +188,7 @@
   .v-card .v-title{display:block;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:4px;}
   .v-card .v-meta{display:block;font-size:11px;opacity:.8;}
 
-  /* ===== ВЕРТИКАЛИ — ПОЛНОЭКРАННЫЙ РЕЖИМ ===== */
+  /* ПОЛНОЭКРАННЫЕ ВЕРТИКАЛИ */
   .vfs{position:fixed;inset:0;background:#000;z-index:2000;display:none;overflow:hidden;}
   .vfs.open{display:block;}
   .vfs-scroll{height:100vh;height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
@@ -209,8 +204,7 @@
   .vfs-progress{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:6px;}
   .vfs-progress span{width:3px;height:24px;background:rgba(255,255,255,.3);border-radius:2px;transition:background .3s,height .3s;}
   .vfs-progress span.active{background:#fff;height:36px;}
-  .vfs-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);color:#fff;padding:10px 20px;border-radius:var(--radius-full);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;animation:fadeIn .5s .5s both;opacity:0;animation-fill-mode:forwards;}
-  @keyframes vfsHint{0%{opacity:0;transform:translateX(-50%) translateY(10px);}15%{opacity:1;transform:translateX(-50%) translateY(0);}85%{opacity:1;}100%{opacity:0;}}
+  .vfs-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);color:#fff;padding:10px 20px;border-radius:var(--radius-full);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;opacity:0;}
   .vfs-hint.show{animation:vfsHint 3s ease forwards;}
 
   /* ФУТЕР */
@@ -246,24 +240,14 @@
   .ptr-indicator.active{transform:translateX(-50%) translateY(0);}
   .ptr-indicator svg{width:16px;height:16px;animation:spin 1s linear infinite;}
 
-  /* МОДАЛКИ */
+  /* МОДАЛКА ПОИСКА */
   .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000;padding:24px;animation:fadeIn .2s ease;}
   .modal-overlay.open{display:flex;}
-  .modal{background:var(--bg-alt);width:100%;max-width:440px;padding:40px;position:relative;border-radius:var(--radius-lg);box-shadow:0 32px 80px rgba(15,23,42,.3);animation:slideUp .3s cubic-bezier(.2,.8,.2,1);}
+  .modal{background:var(--bg-alt);width:100%;max-width:560px;padding:40px;position:relative;border-radius:var(--radius-lg);box-shadow:0 32px 80px rgba(15,23,42,.3);animation:slideUp .3s cubic-bezier(.2,.8,.2,1);}
   .modal-close{position:absolute;top:20px;right:20px;background:var(--soft);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .3s;}
   .modal-close:hover{background:var(--line);color:var(--text);transform:rotate(90deg);}
   .modal h2{font-size:26px;font-weight:800;margin-bottom:8px;letter-spacing:-.025em;}
   .modal-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
-  .form-group{margin-bottom:20px;}
-  .form-group label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px;}
-  .form-group input,.form-group textarea,.form-group select{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--radius-sm);font-size:15px;font-family:inherit;background:var(--bg-alt);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;}
-  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
-  .submit-btn{width:100%;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;border:none;padding:16px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);box-shadow:0 4px 16px rgba(15,23,42,.2);transition:transform .15s,box-shadow .2s;margin-top:8px;min-height:52px;}
-  .submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(15,23,42,.3);}
-  .submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-  .error-msg{color:var(--accent);font-size:13px;margin-top:12px;display:none;padding:12px 16px;background:var(--accent-soft);border-radius:var(--radius-sm);font-weight:500;}
-
-  .search-modal-box{max-width:560px;}
   .search-input-wrap{position:relative;margin-bottom:16px;}
   .search-input-wrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted-soft);pointer-events:none;}
   .search-input-wrap input{width:100%;padding:16px 16px 16px 46px;border:1.5px solid var(--line);border-radius:var(--radius-sm);font-size:15px;font-family:inherit;background:var(--bg-alt);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;}
@@ -281,7 +265,6 @@
   .video-meta{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-bottom:24px;flex-wrap:wrap;animation:fadeInUp .5s .1s both;}
   .video-desc{font-size:16px;line-height:1.7;max-width:760px;white-space:pre-wrap;color:var(--text-soft);animation:fadeInUp .5s .15s both;}
 
-  /* ХЛЕБНЫЕ КРОШКИ */
   .breadcrumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:20px;animation:fadeInUp .4s both;}
   .breadcrumbs a{color:var(--muted);text-decoration:none;transition:color .2s;font-weight:500;}
   .breadcrumbs a:hover{color:var(--accent);}
@@ -319,7 +302,6 @@
   .share-btn:hover{background:var(--soft);border-color:var(--text);transform:translateY(-1px);}
   .share-btn svg{width:16px;height:16px;}
 
-  /* «ЧИТАТЬ ТАКЖЕ» */
   .read-also{margin-top:56px;padding-top:32px;border-top:1px solid var(--line);}
   .read-also h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:24px;}
   .read-also-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
@@ -333,32 +315,6 @@
   .ra-body h3{font-size:15px;font-weight:700;line-height:1.35;margin-bottom:6px;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .ra-date{font-size:11px;color:var(--muted-soft);}
 
-  /* АДМИН */
-  .admin-page{padding:56px 0 72px;}
-  .admin-page h1{font-size:34px;font-weight:800;margin-bottom:36px;letter-spacing:-.025em;}
-  .admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px;}
-  .admin-tabs .login-btn{background:var(--bg-alt);color:var(--text);border:1.5px solid var(--line);box-shadow:var(--shadow-sm);}
-  .admin-content{max-width:920px;}
-  .admin-content form{display:flex;flex-direction:column;gap:16px;}
-  .admin-list{margin-top:36px;display:flex;flex-direction:column;gap:12px;}
-  .admin-item{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;background:var(--card);border-radius:var(--radius);gap:16px;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;animation:fadeInUp .4s both;}
-  .admin-item:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-  .admin-item h4{font-size:15px;font-weight:700;margin-bottom:4px;}
-  .admin-item p{font-size:12px;color:var(--muted);}
-  .admin-item button{background:var(--accent-soft);border:none;color:var(--accent);padding:10px 16px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700;border-radius:var(--radius-full);transition:background .2s,color .2s;min-height:40px;}
-  .admin-item button:hover{background:var(--accent);color:#fff;}
-  .image-upload{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
-  .image-upload input[type=file]{display:none;}
-  .upload-btn{background:var(--bg-alt);border:1.5px dashed var(--line);color:var(--muted);padding:14px 24px;font-size:13px;font-family:inherit;cursor:pointer;border-radius:var(--radius-sm);font-weight:600;transition:border-color .2s,color .2s,background .2s;}
-  .upload-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
-  .upload-preview{width:88px;height:88px;background:var(--soft);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:11px;text-align:center;flex-shrink:0;border-radius:var(--radius-sm);font-weight:600;}
-  .upload-preview img{width:100%;height:100%;object-fit:cover;}
-  .md-tabs{display:flex;gap:8px;margin-bottom:10px;}
-  .md-tab{padding:10px 18px;font-size:12px;font-weight:700;border:1.5px solid var(--line);background:var(--bg-alt);cursor:pointer;font-family:inherit;color:var(--muted);border-radius:var(--radius-full);transition:background .2s,color .2s,border-color .2s;min-height:40px;}
-  .md-tab.active{background:var(--text);color:#fff;border-color:var(--text);}
-  .md-help{font-size:12px;color:var(--muted-soft);margin-top:10px;line-height:1.5;}
-  .checkbox-label{display:flex;gap:10px;align-items:center;margin:16px 0;font-size:14px;font-weight:600;cursor:pointer;user-select:none;}
-  .checkbox-label input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;}
   .empty{color:var(--muted-soft);font-size:15px;padding:40px 20px;text-align:center;background:var(--soft);border-radius:var(--radius);}
 
   @media (prefers-reduced-motion: reduce){
@@ -390,7 +346,6 @@
   @media (max-width:480px){
     .logo{font-size:16px;}
     .logo img{width:26px;height:26px;}
-    .login-btn{padding:10px 16px;font-size:13px;}
     .header-top{padding:12px 0;}
     .header-actions{gap:6px;}
     .icon-btn{width:40px;height:40px;min-width:40px;min-height:40px;}
@@ -402,10 +357,8 @@
   }
 </style>
 </head>
-  
-  <body>
+<body>
 
-<div class="scroll-progress" id="scrollProgress"></div>
 <div class="ptr-indicator" id="ptrIndicator">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
   Обновление...
@@ -416,17 +369,14 @@
   <header>
     <div class="container">
       <div class="header-top">
-        <a class="logo" href="https://kirill12633.github.io/press.metro.new/">
+        <a class="logo" href="index.html">
           <img src="file/main.png" alt="Метро New">
-          МЕТРО NEW <em>International</em>
+          Метро New <em>International</em>
         </a>
         <div class="header-actions">
           <button class="icon-btn" onclick="openSearch()" aria-label="Поиск" title="Поиск (скоро)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
-          <button class="login-btn" id="loginBtn" onclick="openLogin()">Вход</button>
-          <button class="login-btn admin-btn" id="adminBtn" style="display:none;" onclick="go('?admin=1')">Админ</button>
-          <button class="login-btn logout-btn" id="logoutBtn" style="display:none;" onclick="logout()">Выйти</button>
         </div>
       </div>
     </div>
@@ -434,14 +384,13 @@
       <div class="container">
         <nav>
           <ul>
-            <li><a href="https://kirill12633.github.io/press.metro.new/" class="active">Главное</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/world/">Мир</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/technologies/">Технологии</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/culture/">Культура</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/sport/">Спорт</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/weather/">Погода</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/other/">Другое</a></li>
-            <li><a href="?verticals=1">Вертикали</a></li>
+            <li><a href="index.html" class="active">Главное</a></li>
+            <li><a href="world/">Мир</a></li>
+            <li><a href="technologies/">Технологии</a></li>
+            <li><a href="culture/">Культура</a></li>
+            <li><a href="sport/">Спорт</a></li>
+            <li><a href="weather/">Погода</a></li>
+            <li><a href="other/">Другое</a></li>
           </ul>
         </nav>
       </div>
@@ -472,25 +421,12 @@
 
     <div class="section-title">Новости</div>
 
-    <!-- ФИЛЬТР ПО ДАТЕ -->
     <div class="date-filter" id="dateFilter">
       <span class="date-filter-label">Период:</span>
-      <button class="date-chip active" data-filter="all" onclick="setDateFilter('all')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Всё
-      </button>
-      <button class="date-chip" data-filter="hour" onclick="setDateFilter('hour')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        За час
-      </button>
-      <button class="date-chip" data-filter="day" onclick="setDateFilter('day')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        День
-      </button>
-      <button class="date-chip" data-filter="week" onclick="setDateFilter('week')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Неделя
-      </button>
+      <button class="date-chip active" data-filter="all" onclick="setDateFilter('all')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Всё</button>
+      <button class="date-chip" data-filter="hour" onclick="setDateFilter('hour')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>За час</button>
+      <button class="date-chip" data-filter="day" onclick="setDateFilter('day')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>День</button>
+      <button class="date-chip" data-filter="week" onclick="setDateFilter('week')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Неделя</button>
     </div>
 
     <section class="news-grid" id="newsGrid">
@@ -519,29 +455,29 @@
         <div class="footer-col">
           <h4>Метро New</h4>
           <ul>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/about">О нас</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/editorial">Редакция</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/contact">Контакты</a></li>
+            <li><a href="help/about/">О нас</a></li>
+            <li><a href="help/editorial/">Редакция</a></li>
+            <li><a href="help/contact/">Контакты</a></li>
             <li><a href="https://kirill12633.github.io/careers.metro.new/">Вакансии</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Рубрики</h4>
           <ul>
-            <li><a href="https://kirill12633.github.io/press.metro.new/world/">Мир</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/technologies/">Технологии</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/culture/">Культура</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/sport/">Спорт</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/weather/">Погода</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/other/">Другое</a></li>
+            <li><a href="world/">Мир</a></li>
+            <li><a href="technologies/">Технологии</a></li>
+            <li><a href="culture/">Культура</a></li>
+            <li><a href="sport/">Спорт</a></li>
+            <li><a href="weather/">Погода</a></li>
+            <li><a href="other/">Другое</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Правовая информация</h4>
           <ul>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/privacy">Политика конфиденциальности</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/terms">Условия использования</a></li>
-            <li><a href="https://kirill12633.github.io/press.metro.new/help/corrections">Исправления и источники</a></li>
+            <li><a href="help/privacy/">Политика конфиденциальности</a></li>
+            <li><a href="help/terms/">Условия использования</a></li>
+            <li><a href="help/corrections/">Исправления и источники</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -568,12 +504,35 @@
   </footer>
 </div>
 
+<!-- ВИДЕО -->
+<div class="screen" id="screenVideo">
+  <header>
+    <div class="container">
+      <div class="header-top">
+        <a class="logo" href="index.html"><img src="file/main.png" alt="">Метро New <em>International</em></a>
+        <div class="header-actions">
+          <button class="login-btn" onclick="go(location.pathname)">← Назад</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="container">
+    <div class="video-page">
+      <button class="close-video-btn" onclick="go(location.pathname)">✕ Закрыть</button>
+      <div class="video-wrap" id="videoWrap"></div>
+      <h1 class="video-title" id="videoTitle"></h1>
+      <div class="video-meta" id="videoMeta"></div>
+      <p class="video-desc" id="videoDesc"></p>
+    </div>
+  </main>
+</div>
+
 <!-- СТАТЬЯ -->
 <div class="screen" id="screenArticle">
   <header>
     <div class="container">
       <div class="header-top">
-        <a class="logo" href="https://kirill12633.github.io/press.metro.new/"><img src="file/main.png" alt="">МЕТРО NEW <em>International</em></a>
+        <a class="logo" href="index.html"><img src="file/main.png" alt="">Метро New <em>International</em></a>
         <div class="header-actions">
           <button class="login-btn" onclick="go(location.pathname)">← Назад</button>
         </div>
@@ -607,72 +566,9 @@
   </main>
 </div>
 
-<!-- ВИДЕО -->
-<div class="screen" id="screenVideo">
-  <header>
-    <div class="container">
-      <div class="header-top">
-        <a class="logo" href="https://kirill12633.github.io/press.metro.new/"><img src="file/main.png" alt="">МЕТРО NEW <em>International</em></a>
-        <div class="header-actions">
-          <button class="login-btn" onclick="go(location.pathname)">← Назад</button>
-        </div>
-      </div>
-    </div>
-  </header>
-  <main class="container">
-    <div class="video-page">
-      <button class="close-video-btn" onclick="go(location.pathname)">✕ Закрыть</button>
-      <div class="video-wrap" id="videoWrap"></div>
-      <h1 class="video-title" id="videoTitle"></h1>
-      <div class="video-meta" id="videoMeta"></div>
-      <p class="video-desc" id="videoDesc"></p>
-    </div>
-  </main>
-</div>
-
-<!-- АДМИН -->
-<div class="screen" id="screenAdmin">
-  <header>
-    <div class="container">
-      <div class="header-top">
-        <a class="logo" href="https://kirill12633.github.io/press.metro.new/"><img src="file/main.png" alt="">МЕТРО NEW <em>International</em></a>
-        <div class="header-actions">
-          <button class="login-btn" onclick="go(location.pathname)">← На сайт</button>
-          <button class="login-btn logout-btn" onclick="logout()">Выйти</button>
-        </div>
-      </div>
-    </div>
-  </header>
-  <main class="container">
-    <div class="admin-page">
-      <h1>Админ-панель</h1>
-      <div class="admin-tabs">
-        <button class="login-btn" onclick="adminTab('news')">Новости</button>
-        <button class="login-btn" onclick="adminTab('videos')">Видео</button>
-        <button class="login-btn" onclick="adminTab('jobs')">Вакансии</button>
-      </div>
-      <div class="admin-content" id="adminContent"></div>
-    </div>
-  </main>
-</div>
-
-<!-- МОДАЛКИ -->
-<div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true">
-  <div class="modal" id="loginModalBox">
-    <button class="modal-close" onclick="closeLogin()" aria-label="Закрыть">✕</button>
-    <h2>Вход для админа</h2>
-    <p class="modal-sub">Введите email и пароль администратора.</p>
-    <form onsubmit="handleLogin(event)">
-      <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" placeholder="email" required autocomplete="username"></div>
-      <div class="form-group"><label for="loginPassword">Пароль</label><input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password"></div>
-      <button type="submit" class="submit-btn">Войти</button>
-      <p class="error-msg" id="loginError" role="alert"></p>
-    </form>
-  </div>
-</div>
-
+<!-- МОДАЛКА ПОИСКА -->
 <div class="modal-overlay" id="searchModal" role="dialog" aria-modal="true">
-  <div class="modal search-modal-box" id="searchModalBox">
+  <div class="modal" id="searchModalBox">
     <button class="modal-close" onclick="closeSearch()" aria-label="Закрыть">✕</button>
     <h2>Поиск</h2>
     <p class="modal-sub">Найдите новости, видео и репортажи.</p>
@@ -699,7 +595,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
       <span>Вертикали</span>
     </button>
-    <button class="bn-item" onclick="openLogin()" aria-label="Профиль">
+    <button class="bn-item" onclick="location.href='admin/'" aria-label="Профиль">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Профиль</span>
     </button>
@@ -728,7 +624,6 @@ const YT_ID = /^[A-Za-z0-9_\-]{11}$/;
 const isValidYT = id => YT_ID.test(id);
 const isValidNum = id => /^\d{1,15}$/.test(id);
 
-let isAdmin = false;
 let lastFocusedBeforeModal = null;
 let renderToken = 0;
 let currentArticle = null;
@@ -753,7 +648,6 @@ function renderMarkdown(md){
   const rawHtml = window.marked.parse(md || '', {breaks:true, gfm:true});
   return window.DOMPurify.sanitize(rawHtml, {ADD_ATTR:['target']});
 }
-
 function readingTime(text){
   const words = String(text || '').trim().split(/\s+/).length;
   return Math.max(1, Math.ceil(words / 200)) + ' мин';
@@ -761,17 +655,19 @@ function readingTime(text){
 
 function setMeta(title, desc, ogDesc, url, image){
   document.title = title;
-  document.querySelector('meta[name="description"]').setAttribute('content', desc);
-  document.querySelector('meta[property="og:title"]').setAttribute('content', title);
-  document.querySelector('meta[property="og:description"]').setAttribute('content', ogDesc);
-  document.querySelector('meta[property="og:url"]').setAttribute('content', url);
-  if(image) document.querySelector('meta[property="og:image"]').setAttribute('content', image);
-  document.getElementById('canonicalLink').href = url;
+  const safe = (sel, val) => { const el = document.querySelector(sel); if(el) el.setAttribute('content', val); };
+  safe('meta[name="description"]', desc);
+  safe('meta[property="og:title"]', title);
+  safe('meta[property="og:description"]', ogDesc);
+  safe('meta[property="og:url"]', url);
+  if(image) safe('meta[property="og:image"]', image);
+  const canonical = document.getElementById('canonicalLink');
+  if(canonical) canonical.href = url;
 }
 
 const DEFAULT_TITLE = 'Метро New International';
-const DEFAULT_DESC = document.querySelector('meta[name="description"]').content;
-const DEFAULT_OG_DESC = document.querySelector('meta[property="og:description"]').content;
+const DEFAULT_DESC = document.querySelector('meta[name="description"]')?.content || 'Новости проекта Метро New';
+const DEFAULT_OG_DESC = document.querySelector('meta[property="og:description"]')?.content || 'Новости проекта Метро New';
 
 function go(url, replace){
   history[replace ? 'replaceState' : 'pushState'](null, '', url);
@@ -786,8 +682,6 @@ async function render(){
   if(p.get('video')) return showVideo(p.get('video'), token);
   if(p.get('article')) return showArticle(p.get('article'), token);
   if(p.get('verticals')) return openVerticals();
-  if(p.get('admin') && isAdmin) return showAdmin();
-  if(p.get('admin') && !isAdmin) return go(location.pathname, true);
   showHome();
 }
 window.addEventListener('popstate', render);
@@ -804,10 +698,14 @@ function showHome(){
   updateBottomNav('home');
 }
 
-function showAdmin(){
-  setMeta('Админ-панель — Метро New International', DEFAULT_DESC, DEFAULT_OG_DESC, SITE);
-  showScreen('screenAdmin');
-  adminTab('news');
+function updateBottomNav(active){
+  document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', ['home','live','verticals','profile'][i] === active));
+}
+
+function scrollToLive(){
+  const live = document.querySelector('.live-block');
+  if(live){ const y = live.getBoundingClientRect().top + window.scrollY - 140; window.scrollTo({top:y, behavior:'smooth'}); }
+  updateBottomNav('live');
 }
 
 /* ===== ФИЛЬТР ПО ДАТЕ ===== */
@@ -819,11 +717,7 @@ function setDateFilter(filter){
 
 function renderNewsByFilter(){
   const now = new Date();
-  const thresholds = {
-    hour: 60*60*1000,
-    day: 24*60*60*1000,
-    week: 7*24*60*60*1000
-  };
+  const thresholds = { hour: 60*60*1000, day: 24*60*60*1000, week: 7*24*60*60*1000 };
   let list = allNewsCache.slice(1);
   if(currentDateFilter !== 'all'){
     const t = thresholds[currentDateFilter];
@@ -831,10 +725,7 @@ function renderNewsByFilter(){
   }
 
   const grid = document.getElementById('newsGrid');
-  if(!list.length){
-    grid.innerHTML = '<p class="empty">Нет новостей за выбранный период</p>';
-    return;
-  }
+  if(!list.length){ grid.innerHTML = '<p class="empty">Нет новостей за выбранный период</p>'; return; }
 
   grid.innerHTML = list.map((n,i) => {
     const readMin = readingTime(n.body || n.excerpt);
@@ -878,20 +769,11 @@ function initParallax(){
   onScroll();
 }
 
-/* ===== SCROLL PROGRESS ===== */
-let scrollProgressInit = false;
-function initScrollProgress(){
-  if(scrollProgressInit) return;
-  scrollProgressInit = true;
-  const bar = document.getElementById('scrollProgress');
+/* ===== STICKY NAV ===== */
+function initStickyNav(){
   const navWrap = document.getElementById('navWrap');
-  const update = () => {
-    const h = document.documentElement;
-    const scrolled = h.scrollTop;
-    const total = h.scrollHeight - h.clientHeight;
-    bar.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
-    if(navWrap) navWrap.classList.toggle('scrolled', scrolled > 40);
-  };
+  if(!navWrap) return;
+  const update = () => navWrap.classList.toggle('scrolled', window.scrollY > 40);
   window.addEventListener('scroll', update, {passive:true});
   update();
 }
@@ -975,16 +857,15 @@ async function loadHome(){
         <span class="v-text"><span class="v-title">${escapeHtml(v.title)}</span><span class="v-meta">${escapeHtml(v.short||'')}</span></span>
       </button>`).join('');
 
-    initScrollProgress();
+    initStickyNav();
   } catch(err){
     console.error('loadHome:', err);
   }
 }
 
-/* ===== ВЕРТИКАЛИ — ПОЛНОЭКРАННЫЙ РЕЖИМ ===== */
+/* ===== ВЕРТИКАЛИ — ПОЛНОЭКРАН ===== */
 function openVerticals(startIndex = 0){
   if(!verticalsCache.length){
-    // Загрузить, если ещё не загружены
     db.from('videos').select('*').eq('type','vertical').order('sort_order').then(({data}) => {
       verticalsCache = (data||[]).filter(v=>isValidYT(v.video_id));
       if(!verticalsCache.length){ alert('Пока нет вертикальных видео'); return; }
@@ -1021,31 +902,18 @@ function _renderVfs(startIndex){
     if(item) item.scrollIntoView({behavior:'instant'});
   }, 30);
 
-  // Обсервер для обновления прогресса + очистки видео
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const idx = parseInt(entry.target.dataset.index);
       if(entry.isIntersecting){
         currentVfsIndex = idx;
         progress.querySelectorAll('span').forEach((s,i) => s.classList.toggle('active', i === idx));
-      } else {
-        // Очищаем iframe, если пользователь свайпнул
-        const iframe = entry.target.querySelector('iframe');
-        if(iframe && entry.boundingClientRect.top !== 0){
-          const wrap = entry.target;
-          wrap.innerHTML = wrap.innerHTML.replace(/<iframe[^>]*><\/iframe>/g, '');
-          const btn = wrap.querySelector('.vfs-play-btn');
-          if(btn) btn.style.display = 'flex';
-        }
       }
     });
   }, {threshold: 0.6});
 
-  setTimeout(() => {
-    scroll.querySelectorAll('.vfs-item').forEach(item => observer.observe(item));
-  }, 50);
+  setTimeout(() => scroll.querySelectorAll('.vfs-item').forEach(item => observer.observe(item)), 50);
 
-  // Подсказка
   const hint = document.getElementById('vfsHint');
   hint.classList.remove('show');
   void hint.offsetWidth;
@@ -1065,9 +933,7 @@ function closeVerticals(){
   vfs.classList.remove('open');
   document.body.style.overflow = '';
   document.getElementById('vfsScroll').innerHTML = '';
-  if(new URLSearchParams(location.search).get('verticals')){
-    go(location.pathname, true);
-  }
+  if(new URLSearchParams(location.search).get('verticals')) go(location.pathname, true);
 }
 
 /* ===== ВИДЕО ===== */
@@ -1077,8 +943,7 @@ async function showVideo(videoId, token){
   if(token !== renderToken) return;
   if(error || !v) return go(location.pathname, true);
   const title = v.title || 'Видео';
-  document.getElementById('videoWrap').innerHTML =
-    `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" title="${escapeHtml(title)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>`;
+  document.getElementById('videoWrap').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" title="${escapeHtml(title)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>`;
   document.getElementById('videoTitle').textContent = title;
   document.getElementById('videoDesc').textContent = v.short || '';
   document.getElementById('videoMeta').innerHTML = (v.is_live ? '<span style="color:var(--live);font-weight:700;">● LIVE</span> ' : '') + `<span>${escapeHtml(v.duration||'')}</span>`;
@@ -1086,7 +951,7 @@ async function showVideo(videoId, token){
   showScreen('screenVideo');
 }
 
-/* ===== СТАТЬЯ С ХЛЕБНЫМИ КРОШКАМИ И «ЧИТАТЬ ТАКЖЕ» ===== */
+/* ===== СТАТЬЯ ===== */
 async function showArticle(id, token){
   if(!isValidNum(id)) return go(location.pathname, true);
   const { data, error } = await db.from('news').select('*').eq('id', id).maybeSingle();
@@ -1094,12 +959,10 @@ async function showArticle(id, token){
   if(error || !data) return go(location.pathname, true);
 
   currentArticle = data;
-
-  // ХЛЕБНЫЕ КРОШКИ
   const cat = catName(data.category_slug);
-  const catPathUrl = 'https://kirill12633.github.io/press.metro.new/' + catPath(data.category_slug) + '/';
+  const catPathUrl = catPath(data.category_slug) + '/';
   document.getElementById('breadcrumbs').innerHTML = `
-    <a href="https://kirill12633.github.io/press.metro.new/">Главное</a>
+    <a href="index.html">Главное</a>
     <span class="sep">→</span>
     <a href="${catPathUrl}">${escapeHtml(cat)}</a>
     <span class="sep">→</span>
@@ -1110,49 +973,34 @@ async function showArticle(id, token){
 
   let metaHtml = `<span>${escapeHtml(cat)}</span><span>${fmtDate(data.published_at)}</span><span class="read-time">${readingTime(data.body || data.excerpt)}</span>`;
   if(data.is_urgent) metaHtml = `<span class="urgent-badge" style="margin-right:4px;">Срочно</span>` + metaHtml;
-  if(data.author){
-    metaHtml = `<div class="article-author">${data.author_avatar?`<img src="${escapeHtml(data.author_avatar)}" alt="">`:''}<span>${escapeHtml(data.author)}</span></div>` + metaHtml;
-  }
+  if(data.author) metaHtml = `<div class="article-author">${data.author_avatar?`<img src="${escapeHtml(data.author_avatar)}" alt="">`:''}<span>${escapeHtml(data.author)}</span></div>` + metaHtml;
   document.getElementById('articleMeta').innerHTML = metaHtml;
 
   const cover = document.getElementById('articleCover');
-  if(data.cover_image){
-    cover.innerHTML = `<img src="${escapeHtml(data.cover_image)}" alt="">`;
-    cover.style.display = 'block';
-  } else {
-    cover.innerHTML = '';
-    cover.style.display = 'none';
-  }
+  if(data.cover_image){ cover.innerHTML = `<img src="${escapeHtml(data.cover_image)}" alt="">`; cover.style.display = 'block'; }
+  else { cover.innerHTML = ''; cover.style.display = 'none'; }
 
   document.getElementById('articleBody').innerHTML = renderMarkdown(data.body || data.excerpt || '');
 
   const pageUrl = SITE + '?article=' + id;
-  const shareTitle = data.title;
-  document.getElementById('shareTg').href = 'https://t.me/share/url?url=' + encodeURIComponent(pageUrl) + '&text=' + encodeURIComponent(shareTitle);
-  document.getElementById('shareVk').href = 'https://vk.com/share.php?url=' + encodeURIComponent(pageUrl) + '&title=' + encodeURIComponent(shareTitle);
+  document.getElementById('shareTg').href = 'https://t.me/share/url?url=' + encodeURIComponent(pageUrl) + '&text=' + encodeURIComponent(data.title);
+  document.getElementById('shareVk').href = 'https://vk.com/share.php?url=' + encodeURIComponent(pageUrl) + '&title=' + encodeURIComponent(data.title);
 
-  // JSON-LD NewsArticle
-  const jsonLd = document.createElement('script');
-  jsonLd.type = 'application/ld+json';
-  jsonLd.textContent = JSON.stringify({
-    "@context":"https://schema.org",
-    "@type":"NewsArticle",
-    "headline": data.title,
-    "description": data.excerpt || '',
-    "image": data.cover_image || (SITE + 'file/main.png'),
-    "datePublished": data.published_at,
-    "dateModified": data.published_at,
-    "author": {"@type":"Person","name": data.author || "Редакция Метро New"},
-    "publisher": {"@type":"Organization","name":"Метро New International","logo":{"@type":"ImageObject","url": SITE + 'file/main.png'}},
-    "mainEntityOfPage": {"@type":"WebPage","@id": pageUrl}
-  });
-  // Удаляем старую разметку, если была
+  // JSON-LD
   const oldLd = document.querySelector('script[data-article-ld]');
   if(oldLd) oldLd.remove();
+  const jsonLd = document.createElement('script');
+  jsonLd.type = 'application/ld+json';
   jsonLd.dataset.articleLd = '1';
+  jsonLd.textContent = JSON.stringify({
+    "@context":"https://schema.org","@type":"NewsArticle","headline":data.title,"description":data.excerpt||'',
+    "image": data.cover_image || (SITE + 'file/main.png'),"datePublished":data.published_at,
+    "author":{"@type":"Person","name":data.author||"Редакция Метро New"},
+    "publisher":{"@type":"Organization","name":"Метро New International","logo":{"@type":"ImageObject","url":SITE + 'file/main.png'}},
+    "mainEntityOfPage":{"@type":"WebPage","@id":pageUrl}
+  });
   document.head.appendChild(jsonLd);
 
-  // ЧИТАТЬ ТАКЖЕ
   loadReadAlso(data.category_slug, id);
 
   const desc = data.excerpt || data.title;
@@ -1165,14 +1013,9 @@ async function loadReadAlso(categorySlug, excludeId){
   const container = document.getElementById('readAlso');
   container.innerHTML = '';
   const { data } = await db.from('news').select('*').eq('category_slug', categorySlug).neq('id', excludeId).order('published_at',{ascending:false}).limit(3);
-  if(!data || !data.length){
-    // Если нет в этой категории — берём любые
-    const { data: any } = await db.from('news').select('*').neq('id', excludeId).order('published_at',{ascending:false}).limit(3);
-    if(!any || !any.length) return;
-    _renderReadAlso(any);
-    return;
-  }
-  _renderReadAlso(data);
+  if(data && data.length){ _renderReadAlso(data); return; }
+  const { data: any } = await db.from('news').select('*').neq('id', excludeId).order('published_at',{ascending:false}).limit(3);
+  if(any && any.length) _renderReadAlso(any);
 }
 
 function _renderReadAlso(list){
@@ -1195,257 +1038,55 @@ function _renderReadAlso(list){
 async function shareArticle(){
   if(!currentArticle) return;
   const url = SITE + '?article=' + currentArticle.id;
-  const title = currentArticle.title;
   try {
-    if(navigator.share){
-      await navigator.share({title, text: currentArticle.excerpt || '', url});
-    } else {
+    if(navigator.share){ await navigator.share({title: currentArticle.title, text: currentArticle.excerpt || '', url}); }
+    else {
       await navigator.clipboard.writeText(url);
       const btn = document.getElementById('shareBtn');
       const orig = btn.innerHTML;
-      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Скопировано';
+      btn.innerHTML = '✓ Скопировано';
       setTimeout(()=>btn.innerHTML = orig, 2000);
     }
-  } catch(err){
-    if(err.name !== 'AbortError') console.error(err);
+  } catch(err){ if(err.name !== 'AbortError') console.error(err); }
+}
+
+/* ===== ПОИСК (заглушка) ===== */
+function openSearch(){
+  lastFocusedBeforeModal = document.activeElement;
+  document.getElementById('searchModal').classList.add('open');
+  setTimeout(()=>document.getElementById('searchInput').focus(),50);
+}
+function closeSearch(){
+  document.getElementById('searchModal').classList.remove('open');
+  if(lastFocusedBeforeModal) lastFocusedBeforeModal.focus();
+}
+
+/* ===== КЛИК ===== */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-article]');
+  if(a){
+    if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1) return;
+    e.preventDefault();
+    go('?article=' + a.dataset.article);
   }
-}
-
-/* ===== АВТОРИЗАЦИЯ ===== */
-function openLogin(){ lastFocusedBeforeModal = document.activeElement; document.getElementById('loginModal').classList.add('open'); setTimeout(()=>document.getElementById('loginEmail').focus(),50); }
-function closeLogin(){ document.getElementById('loginModal').classList.remove('open'); document.getElementById('loginError').style.display = 'none'; if(lastFocusedBeforeModal) lastFocusedBeforeModal.focus(); }
-function openSearch(){ lastFocusedBeforeModal = document.activeElement; document.getElementById('searchModal').classList.add('open'); setTimeout(()=>document.getElementById('searchInput').focus(),50); }
-function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); if(lastFocusedBeforeModal) lastFocusedBeforeModal.focus(); }
-
-async function handleLogin(e){
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const errEl = document.getElementById('loginError');
-  errEl.style.display = 'none';
-  const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
-  if(authError){ errEl.textContent = 'Неверный email или пароль'; errEl.style.display = 'block'; return; }
-  const { data: adminRow, error: adminErr } = await db.from('admins').select('uid').eq('user_id', authData.user.id).maybeSingle();
-  if(adminErr || !adminRow){
-    await db.auth.signOut();
-    errEl.textContent = adminErr ? 'Ошибка доступа.' : 'У вас нет прав администратора';
-    errEl.style.display = 'block';
-    return;
-  }
-  document.getElementById('loginPassword').value = '';
-  closeLogin();
-}
-
-async function logout(){ await db.auth.signOut(); go(location.pathname, true); }
-function updateAuthUI(){ document.getElementById('adminBtn').style.display = isAdmin?'inline-block':'none'; document.getElementById('logoutBtn').style.display = isAdmin?'inline-block':'none'; document.getElementById('loginBtn').style.display = isAdmin?'none':'inline-block'; }
-async function refreshAdmin(session){ isAdmin = false; if(session){ const { data } = await db.from('admins').select('uid').eq('user_id', session.user.id).maybeSingle(); isAdmin = !!data; } updateAuthUI(); }
-
-/* ===== АДМИН ===== */
-async function uploadImage(file){
-  if(!file) throw new Error('Файл не выбран');
-  const ext = file.name.split('.').pop().toLowerCase();
-  const name = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-  const { error } = await db.storage.from('news-images').upload(name, file);
-  if(error) throw error;
-  const { data } = db.storage.from('news-images').getPublicUrl(name);
-  return data.publicUrl;
-}
-
-function adminTab(tab){
-  const el = document.getElementById('adminContent');
-  if(tab==='news'){
-    el.innerHTML = `
-      <h3 style="margin-bottom:20px;font-size:20px;font-weight:800;letter-spacing:-.02em;">Добавить новость</h3>
-      <form onsubmit="addNews(event)" id="newsForm">
-        <div class="form-group"><label for="nCat">Рубрика</label><select id="nCat"><option value="world">Мир</option><option value="tech">Технологии</option><option value="culture">Культура</option><option value="sport">Спорт</option><option value="weather">Погода</option><option value="other">Другое</option></select></div>
-        <div class="form-group"><label for="nTitle">Заголовок</label><input id="nTitle" required></div>
-        <div class="form-group"><label for="nExcerpt">Краткое описание</label><textarea id="nExcerpt" rows="2"></textarea></div>
-        <div class="form-group"><label>Обложка (фото)</label><div class="image-upload"><label class="upload-btn" for="nCover">Выбрать файл</label><input type="file" id="nCover" accept="image/*" onchange="previewCover(this)"><div class="upload-preview" id="nCoverPreview">Нет фото</div></div></div>
-        <div class="form-group"><label for="nAuthor">Автор</label><input id="nAuthor" placeholder="Редакция Метро New" value="Редакция Метро New"></div>
-        <div class="form-group"><label>Фото автора</label><div class="image-upload"><label class="upload-btn" for="nAvatar">Выбрать файл</label><input type="file" id="nAvatar" accept="image/*" onchange="previewAvatar(this)"><div class="upload-preview" id="nAvatarPreview">Нет фото</div></div></div>
-        <div class="form-group"><label>Текст (Markdown)</label><div class="md-tabs"><button type="button" class="md-tab active" onclick="mdTab(this,'edit')">Редактор</button><button type="button" class="md-tab" onclick="mdTab(this,'preview')">Предпросмотр</button></div><textarea id="nBody" rows="12" style="font-family:monospace;font-size:14px;"></textarea><div id="nBodyPreview" class="article-body" style="display:none;background:var(--bg);padding:20px;margin-top:12px;border-radius:var(--radius-sm);border:1.5px solid var(--line);min-height:200px;"></div><p class="md-help">Поддерживается: жирный (**текст**), курсив (*текст*), заголовки (#), списки (-), ссылки, фото, цитаты (&gt;)</p></div>
-        <label class="checkbox-label"><input type="checkbox" id="nNew"> Пометка NEW</label>
-        <label class="checkbox-label"><input type="checkbox" id="nUrgent"> 🔴 Срочная новость</label>
-        <button type="submit" class="submit-btn">Опубликовать</button>
-      </form>
-      <div class="admin-list" id="adminList"></div>`;
-    loadAdminNews();
-  } else if(tab==='videos'){
-    el.innerHTML = `
-      <h3 style="margin-bottom:20px;font-size:20px;font-weight:800;letter-spacing:-.02em;">Добавить видео</h3>
-      <form onsubmit="addVideo(event)">
-        <div class="form-group"><label for="vType">Тип</label><select id="vType"><option value="live">LIVE</option><option value="report">Репортаж</option><option value="vertical">Вертикаль</option></select></div>
-        <div class="form-group"><label for="vId">YouTube ID</label><input id="vId" placeholder="dQw4w9WgXcQ" required pattern="[A-Za-z0-9_\\-]{11}"></div>
-        <div class="form-group"><label for="vTitle">Заголовок</label><input id="vTitle" required></div>
-        <div class="form-group"><label for="vShort">Короткое описание</label><input id="vShort"></div>
-        <div class="form-group"><label for="vDur">Длительность</label><input id="vDur" placeholder="12:34 / LIVE"></div>
-        <div class="form-group"><label>Своя обложка (необязательно)</label><div class="image-upload"><label class="upload-btn" for="vCover">Выбрать файл</label><input type="file" id="vCover" accept="image/*" onchange="previewVideoCover(this)"><div class="upload-preview" id="vCoverPreview">Нет фото</div></div><p class="md-help">Если не загрузить — возьмётся обложка YouTube</p></div>
-        <label class="checkbox-label"><input type="checkbox" id="vLive"> Прямой эфир</label>
-        <button type="submit" class="submit-btn">Добавить</button>
-      </form>
-      <div class="admin-list" id="adminList"></div>`;
-    loadAdminVideos();
-  } else if(tab==='jobs'){
-    el.innerHTML = `
-      <h3 style="margin-bottom:20px;font-size:20px;font-weight:800;letter-spacing:-.02em;">Добавить вакансию</h3>
-      <form onsubmit="addJob(event)">
-        <div class="form-group"><label for="jTitle">Название</label><input id="jTitle" required></div>
-        <div class="form-group"><label for="jType">Тип</label><input id="jType" placeholder="Полная занятость"></div>
-        <div class="form-group"><label for="jLoc">Локация</label><input id="jLoc" placeholder="Удалённо"></div>
-        <button type="submit" class="submit-btn">Добавить</button>
-      </form>
-      <div class="admin-list" id="adminList"></div>`;
-    loadAdminJobs();
-  }
-}
-
-function previewCover(input){ const box = document.getElementById('nCoverPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
-function previewAvatar(input){ const box = document.getElementById('nAvatarPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
-function previewVideoCover(input){ const box = document.getElementById('vCoverPreview'); if(!input.files[0]){ box.innerHTML = 'Нет фото'; return; } box.innerHTML = `<img src="${URL.createObjectURL(input.files[0])}" alt="">`; }
-function mdTab(btn, mode){
-  document.querySelectorAll('.md-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const ta = document.getElementById('nBody');
-  const prev = document.getElementById('nBodyPreview');
-  if(mode==='preview'){ ta.style.display = 'none'; prev.style.display = 'block'; prev.innerHTML = renderMarkdown(ta.value); }
-  else { ta.style.display = 'block'; prev.style.display = 'none'; }
-}
-
-function adminError(action, error){ console.error(action, error); alert('Не удалось выполнить действие: ' + (error.message || 'сессия истекла')); }
-
-async function loadAdminNews(){
-  const { data, error } = await db.from('news').select('*').order('published_at',{ascending:false});
-  const list = document.getElementById('adminList');
-  if(!list) return;
-  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
-  list.innerHTML = (data||[]).map(n=>`
-    <div class="admin-item">
-      <div><h4>${n.is_urgent?'🔴 ':''}${escapeHtml(n.title)}</h4><p>${escapeHtml(catName(n.category_slug))} · ${fmtDate(n.published_at)}${n.author?' · '+escapeHtml(n.author):''}</p></div>
-      <button onclick="deleteNews(${Number(n.id)})">Удалить</button>
-    </div>`).join('');
-}
-
-async function addNews(e){
-  e.preventDefault();
-  const form = e.target;
-  const submitBtn = form.querySelector('.submit-btn');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Публикация...';
-  try {
-    let coverUrl = null;
-    let avatarUrl = null;
-    const coverFile = document.getElementById('nCover').files[0];
-    if(coverFile) coverUrl = await uploadImage(coverFile);
-    const avatarFile = document.getElementById('nAvatar').files[0];
-    if(avatarFile) avatarUrl = await uploadImage(avatarFile);
-    const { error } = await db.from('news').insert({
-      category_slug: document.getElementById('nCat').value,
-      title: document.getElementById('nTitle').value,
-      excerpt: document.getElementById('nExcerpt').value,
-      body: document.getElementById('nBody').value,
-      cover_image: coverUrl,
-      author: document.getElementById('nAuthor').value || 'Редакция Метро New',
-      author_avatar: avatarUrl,
-      is_new: document.getElementById('nNew').checked,
-      is_urgent: document.getElementById('nUrgent').checked
-    });
-    if(error) throw error;
-    alert('Опубликовано');
-    form.reset();
-    document.getElementById('nCoverPreview').innerHTML = 'Нет фото';
-    document.getElementById('nAvatarPreview').innerHTML = 'Нет фото';
-    loadAdminNews();
-    loadHome();
-  } catch(err){
-    adminError('addNews', err);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Опубликовать';
-  }
-}
-
-async function deleteNews(id){ if(!confirm('Удалить?')) return; const { error } = await db.from('news').delete().eq('id',id); if(error) return adminError('deleteNews', error); loadAdminNews(); loadHome(); }
-
-async function loadAdminVideos(){
-  const { data, error } = await db.from('videos').select('*').order('sort_order');
-  const list = document.getElementById('adminList');
-  if(!list) return;
-  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
-  list.innerHTML = (data||[]).map(v=>`
-    <div class="admin-item">
-      <div><h4>${escapeHtml(v.title)}</h4><p>${escapeHtml(v.type)} · ${escapeHtml(v.video_id)}</p></div>
-      <button onclick="deleteVideo(${Number(v.id)})">Удалить</button>
-    </div>`).join('');
-}
-async function addVideo(e){
-  e.preventDefault();
-  const form = e.target;
-  const videoId = document.getElementById('vId').value.trim();
-  if(!isValidYT(videoId)) return alert('YouTube ID должен быть 11 символов');
-  let coverUrl = null;
-  const coverFile = document.getElementById('vCover').files[0];
-  if(coverFile) coverUrl = await uploadImage(coverFile);
-  const { error } = await db.from('videos').insert({
-    type: document.getElementById('vType').value,
-    video_id: videoId,
-    title: document.getElementById('vTitle').value,
-    short: document.getElementById('vShort').value,
-    duration: document.getElementById('vDur').value,
-    is_live: document.getElementById('vLive').checked,
-    cover_image: coverUrl
-  });
-  if(error) return adminError('addVideo', error);
-  alert('Добавлено'); form.reset(); document.getElementById('vCoverPreview').innerHTML = 'Нет фото'; loadAdminVideos(); loadHome();
-}
-async function deleteVideo(id){ if(!confirm('Удалить?')) return; const { error } = await db.from('videos').delete().eq('id',id); if(error) return adminError('deleteVideo', error); loadAdminVideos(); loadHome(); }
-
-async function loadAdminJobs(){
-  const { data, error } = await db.from('jobs').select('*').order('created_at',{ascending:false});
-  const list = document.getElementById('adminList');
-  if(!list) return;
-  if(error){ list.innerHTML = '<p class="empty">Ошибка загрузки</p>'; return; }
-  list.innerHTML = (data||[]).map(j=>`
-    <div class="admin-item">
-      <div><h4>${escapeHtml(j.title)}</h4><p>${escapeHtml(j.type||'')} · ${escapeHtml(j.location||'')}</p></div>
-      <button onclick="deleteJob(${Number(j.id)})">Удалить</button>
-    </div>`).join('');
-}
-async function addJob(e){ e.preventDefault(); const form = e.target; const { error } = await db.from('jobs').insert({ title: document.getElementById('jTitle').value, type: document.getElementById('jType').value, location: document.getElementById('jLoc').value }); if(error) return adminError('addJob', error); alert('Добавлено'); form.reset(); loadAdminJobs(); }
-async function deleteJob(id){ if(!confirm('Удалить?')) return; const { error } = await db.from('jobs').delete().eq('id',id); if(error) return adminError('deleteJob', error); loadAdminJobs(); }
-
-/* ===== СТАРТ ===== */
-db.auth.onAuthStateChange((event, session) => {
-  setTimeout(async () => {
-    await refreshAdmin(session);
-    if(event === 'SIGNED_OUT' && new URLSearchParams(location.search).get('admin')){
-      go(location.pathname, true);
-    }
-  }, 0);
 });
 
-(async () => {
-  const { data: { session } } = await db.auth.getSession();
-  await refreshAdmin(session);
-  loadHome();
-  render();
-})();
+/* ===== СТАРТ ===== */
+loadHome();
+render();
 
 /* ===== КЛАВИАТУРА ===== */
 document.addEventListener('keydown', e => {
-  const loginOpen = document.getElementById('loginModal').classList.contains('open');
   const searchOpen = document.getElementById('searchModal').classList.contains('open');
   const vfsOpen = document.getElementById('vfs').classList.contains('open');
 
   if(e.key === 'Escape'){
-    if(loginOpen) return closeLogin();
     if(searchOpen) return closeSearch();
     if(vfsOpen) return closeVerticals();
     const active = document.querySelector('.screen.active');
-    if(active && !['screenHome','screenAdmin'].includes(active.id)) go(location.pathname);
+    if(active && active.id !== 'screenHome') go(location.pathname);
     return;
   }
-
-  // Вертикали: стрелки
   if(vfsOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
     e.preventDefault();
     const dir = e.key === 'ArrowDown' ? 1 : -1;
@@ -1456,9 +1097,8 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-
-  if((e.key === 'Tab') && (loginOpen || searchOpen)){
-    const modal = loginOpen ? document.getElementById('loginModal') : document.getElementById('searchModal');
+  if((e.key === 'Tab') && searchOpen){
+    const modal = document.getElementById('searchModal');
     const f = modal.querySelectorAll('button, input, a[href], select, textarea');
     if(!f.length) return;
     const firstEl = f[0], lastEl = f[f.length-1];
@@ -1467,7 +1107,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-document.getElementById('loginModal').addEventListener('click', e => { if(e.target.id==='loginModal') closeLogin(); });
 document.getElementById('searchModal').addEventListener('click', e => { if(e.target.id==='searchModal') closeSearch(); });
 
 /* ===== PULL-TO-REFRESH ===== */
@@ -1476,16 +1115,6 @@ const ptrIndicator = document.getElementById('ptrIndicator');
 document.addEventListener('touchstart', e => { if(window.scrollY === 0){ ptrStartY = e.touches[0].clientY; ptrPulling = true; } }, {passive:true});
 document.addEventListener('touchmove', e => { if(!ptrPulling) return; const y = e.touches[0].clientY; const diff = y - ptrStartY; if(diff > 20 && window.scrollY === 0) ptrIndicator.classList.add('active'); }, {passive:true});
 document.addEventListener('touchend', async () => { if(!ptrPulling) return; ptrPulling = false; if(ptrIndicator.classList.contains('active')){ ptrIndicator.classList.remove('active'); await loadHome(); } });
-
-/* ===== BOTTOM NAV ===== */
-function updateBottomNav(active){
-  document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', ['home','live','verticals','profile'][i] === active));
-}
-function scrollToLive(){
-  const live = document.querySelector('.live-block');
-  if(live){ const y = live.getBoundingClientRect().top + window.scrollY - 140; window.scrollTo({top:y, behavior:'smooth'}); }
-  updateBottomNav('live');
-}
 </script>
 </body>
 </html>
