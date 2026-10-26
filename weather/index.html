@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Погода — Метро New International</title>
+<meta name="description" content="Погода в 20+ городах мира — Метро New International. Текущая погода, прогноз на неделю и почасовой прогноз.">
+<meta property="og:title" content="Погода — Метро New International">
+<meta property="og:description" content="Погода в 20+ городах мира">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kirill12633.github.io/press.metro.new/weather/">
+<meta property="og:image" content="https://kirill12633.github.io/press.metro.new/file/main.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="../file/main.png" type="image/png">
+<link rel="canonical" href="https://kirill12633.github.io/press.metro.new/weather/" id="canonicalLink">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f8f9fc;--bg-alt:#fff;--text:#0f172a;--text-soft:#1e293b;
+    --muted:#64748b;--muted-soft:#94a3b8;--line:#e8ecf3;--line-soft:#f1f5f9;
+    --accent:#ef4444;--accent-soft:#fee2e2;--accent-hover:#dc2626;
+    --blue:#3b82f6;--blue-soft:#dbeafe;--sky:#0ea5e9;
+    --success:#22c55e;--warning:#f59e0b;
+    --soft:#f1f5f9;--card:#fff;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+    --shadow:0 4px 16px rgba(15,23,42,.06);
+    --shadow-md:0 8px 24px rgba(15,23,42,.08);
+    --shadow-lg:0 16px 48px rgba(15,23,42,.12);
+    --radius-sm:10px;--radius:16px;--radius-lg:24px;--radius-full:999px;
+    --header-h:108px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:'cv11','ss01';}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px;}
+  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+  .skeleton{background:linear-gradient(90deg,#eef2f8 0%,#f8fafc 50%,#eef2f8 100%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-sm);}
+
+  /* ШАПКА */
+  header{background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;}
+  .header-top{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:16px;}
+  .logo{font-size:19px;font-weight:800;letter-spacing:-.03em;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px;transition:opacity .2s;}
+  .logo:hover{opacity:.75;}
+  .logo img{width:32px;height:32px;border-radius:var(--radius-sm);object-fit:cover;box-shadow:var(--shadow-sm);transition:transform .3s;}
+  .logo:hover img{transform:rotate(-8deg) scale(1.08);}
+  .logo em{font-style:normal;color:var(--muted);font-weight:500;font-size:13px;letter-spacing:0;}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .back-btn{display:inline-flex;align-items:center;gap:8px;background:var(--bg-alt);border:1.5px solid var(--line);color:var(--text-soft);padding:10px 18px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border-radius:var(--radius-full);text-decoration:none;transition:background .2s,transform .15s;min-height:44px;}
+  .back-btn:hover{background:var(--soft);transform:translateX(-2px);}
+  .back-btn svg{width:16px;height:16px;}
+
+  .nav-wrap{position:sticky;top:var(--header-h);z-index:99;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);transition:box-shadow .3s,background .3s;}
+  .nav-wrap.scrolled{box-shadow:0 4px 20px rgba(15,23,42,.08);background:rgba(255,255,255,.98);}
+  nav ul{display:flex;gap:6px;list-style:none;overflow-x:auto;scrollbar-width:none;padding:10px 0;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+  nav ul::-webkit-scrollbar{display:none;}
+  nav a{display:flex;align-items:center;gap:6px;padding:10px 18px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;border-radius:var(--radius-full);transition:background .2s,color .2s,transform .2s;scroll-snap-align:start;min-height:44px;}
+  nav a:hover{background:var(--soft);color:var(--text);transform:translateY(-1px);}
+  nav a.active{background:var(--text);color:#fff;font-weight:600;}
+
+  /* PAGE HEADER */
+  .page-header{padding:56px 0 32px;background:linear-gradient(180deg,#fff 0%,var(--bg) 100%);margin:0 -24px;padding-left:24px;padding-right:24px;animation:fadeIn .6s ease;}
+  .breadcrumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .breadcrumbs a{color:var(--muted);text-decoration:none;transition:color .2s;font-weight:500;}
+  .breadcrumbs a:hover{color:var(--accent);}
+  .breadcrumbs span.sep{color:var(--muted-soft);}
+  .breadcrumbs span.current{color:var(--text-soft);font-weight:600;}
+
+  .page-header h1{font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:-.035em;line-height:1.05;margin-bottom:16px;background:linear-gradient(135deg,#0ea5e9 0%,#3b82f6 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:fadeInUp .6s .1s both;}
+  .page-header p{font-size:17px;color:var(--muted);max-width:640px;line-height:1.6;animation:fadeInUp .6s .2s both;}
+
+  /* ПОИСК */
+  .search-wrap{max-width:640px;margin:32px 0;position:relative;animation:fadeInUp .6s .3s both;}
+  .search-input{width:100%;padding:18px 56px 18px 56px;border:2px solid var(--line);border-radius:var(--radius-full);font-size:16px;font-family:inherit;background:var(--bg-alt);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;box-shadow:var(--shadow-sm);}
+  .search-input:focus{border-color:var(--sky);box-shadow:0 0 0 4px rgba(14,165,233,.1);}
+  .search-icon{position:absolute;left:20px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:var(--muted-soft);pointer-events:none;}
+  .search-spinner{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite;display:none;}
+  .search-spinner.active{display:block;}
+
+  .search-results{position:absolute;top:100%;left:0;right:0;margin-top:8px;background:var(--bg-alt);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:50;max-height:360px;overflow-y:auto;display:none;}
+  .search-results.active{display:block;}
+  .search-result{padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--line-soft);transition:background .15s;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .search-result:last-child{border-bottom:none;}
+  .search-result:hover{background:var(--soft);}
+  .search-result-name{font-size:14px;font-weight:600;color:var(--text);}
+  .search-result-country{font-size:12px;color:var(--muted);}
+  .search-result-temp{font-size:15px;font-weight:700;color:var(--sky);}
+
+  /* ТЕКУЩАЯ ПОГОДА */
+  .current-weather{
+    background:linear-gradient(135deg,#0ea5e9 0%,#3b82f6 50%,#6366f1 100%);
+    color:#fff;border-radius:var(--radius-lg);padding:48px 40px;
+    margin:32px 0;position:relative;overflow:hidden;
+    box-shadow:0 20px 60px rgba(14,165,233,.3);
+    animation:fadeInUp .7s both;
+  }
+  .current-weather::before{
+    content:'';position:absolute;top:-100px;right:-100px;
+    width:300px;height:300px;
+    background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%);
+    border-radius:50%;
+  }
+  .current-weather::after{
+    content:'';position:absolute;bottom:-80px;left:-80px;
+    width:200px;height:200px;
+    background:radial-gradient(circle,rgba(255,255,255,.1) 0%,transparent 70%);
+    border-radius:50%;
+  }
+  .cw-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;position:relative;z-index:2;margin-bottom:32px;}
+  .cw-city{font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:4px;}
+  .cw-country{font-size:14px;opacity:.85;font-weight:500;}
+  .cw-temp-big{font-size:clamp(64px,10vw,96px);font-weight:900;line-height:1;letter-spacing:-.04em;display:flex;align-items:flex-start;gap:4px;}
+  .cw-temp-big span{font-size:.4em;margin-top:12px;opacity:.85;}
+  .cw-condition{font-size:18px;font-weight:600;opacity:.95;margin-top:8px;display:flex;align-items:center;gap:8px;}
+  .cw-icon{font-size:40px;animation:float 3s ease-in-out infinite;}
+
+  .cw-details{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:16px;position:relative;z-index:2;
+    padding-top:24px;border-top:1px solid rgba(255,255,255,.2);
+  }
+  .cw-detail{display:flex;flex-direction:column;gap:4px;}
+  .cw-detail-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.7;}
+  .cw-detail-value{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+
+  /* ПРОГНОЗ */
+  .forecast-section{margin:48px 0;}
+  .section-title{font-size:24px;font-weight:800;letter-spacing:-.025em;margin-bottom:24px;display:flex;align-items:center;gap:12px;}
+  .section-title svg{width:28px;height:28px;color:var(--sky);}
+
+  .hourly-scroll{display:flex;gap:12px;overflow-x:auto;padding:8px 0 20px;scroll-snap-type:x mandatory;scrollbar-width:thin;}
+  .hourly-scroll::-webkit-scrollbar{height:6px;}
+  .hourly-scroll::-webkit-scrollbar-track{background:var(--line-soft);border-radius:var(--radius-full);}
+  .hourly-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:var(--radius-full);}
+  .hourly-item{
+    flex:0 0 90px;background:var(--card);border-radius:var(--radius);
+    padding:16px 12px;text-align:center;
+    box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .3s;
+    scroll-snap-align:start;
+  }
+  .hourly-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+  .hourly-time{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px;}
+  .hourly-icon{font-size:28px;margin-bottom:8px;}
+  .hourly-temp{font-size:18px;font-weight:800;letter-spacing:-.02em;}
+
+  .daily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
+  .daily-item{
+    background:var(--card);border-radius:var(--radius);
+    padding:20px 16px;text-align:center;
+    box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .3s;
+  }
+  .daily-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+  .daily-day{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+  .daily-date{font-size:11px;color:var(--muted-soft);margin-bottom:14px;}
+  .daily-icon{font-size:36px;margin-bottom:12px;animation:float 4s ease-in-out infinite;}
+  .daily-temp{display:flex;justify-content:center;gap:8px;align-items:baseline;margin-bottom:8px;}
+  .daily-temp-max{font-size:18px;font-weight:800;color:var(--text);}
+  .daily-temp-min{font-size:14px;font-weight:600;color:var(--muted);}
+  .daily-precip{font-size:11px;color:var(--blue);font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;}
+
+  /* ГОРОДА */
+  .cities-section{margin:64px 0 72px;}
+  .cities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+  .city-card{
+    background:var(--card);border-radius:var(--radius);
+    padding:20px;cursor:pointer;
+    box-shadow:var(--shadow-sm);transition:transform .25s,box-shadow .3s,border-color .2s;
+    border:1.5px solid transparent;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    animation:fadeInUp .5s both;
+  }
+  .city-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--sky);}
+  .city-card.active{border-color:var(--sky);background:linear-gradient(135deg,#f0f9ff 0%,#fff 100%);}
+  .city-info{flex:1;min-width:0;}
+  .city-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .city-country{font-size:12px;color:var(--muted);}
+  .city-temp{display:flex;align-items:center;gap:8px;}
+  .city-temp-value{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--sky);}
+  .city-temp-icon{font-size:24px;}
+
+  /* ФУТЕР */
+  footer{background:linear-gradient(180deg,var(--bg-alt) 0%,#eef2f8 100%);padding:56px 0 40px;border-top:1px solid var(--line);}
+  .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:48px;margin-bottom:48px;}
+  .footer-col h4{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--text);margin-bottom:20px;}
+  .footer-col ul{list-style:none;}
+  .footer-col li{margin-bottom:12px;}
+  .footer-col a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .2s;font-weight:500;}
+  .footer-col a:hover{color:var(--accent);}
+  .social-list{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 24px;}
+  .social-list li{margin-bottom:0 !important;}
+  .social-list a{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s;padding:6px 0;}
+  .social-list a:hover{color:var(--text);}
+  .social-list svg{width:16px;height:16px;opacity:.7;flex-shrink:0;transition:opacity .2s,transform .2s;}
+  .social-list a:hover svg{opacity:1;transform:scale(1.1);}
+  .footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;padding-top:28px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);align-items:center;}
+  .footer-brand{display:flex;align-items:center;gap:12px;font-weight:800;color:var(--text);font-size:15px;}
+  .footer-brand img{width:28px;height:28px;border-radius:8px;box-shadow:var(--shadow-sm);}
+  .age-marks{display:flex;gap:6px;align-items:center;font-weight:600;color:var(--text-soft);}
+  .age-mark{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 8px;border:1.5px solid var(--line);border-radius:6px;font-size:11px;font-weight:700;background:var(--bg-alt);color:var(--muted);}
+
+  /* БЛОК ИНФО ВНИЗУ */
+  .info-block{
+    background:linear-gradient(135deg,#f0f9ff 0%,#fff 100%);
+    border-radius:var(--radius-lg);padding:40px 32px;margin-top:32px;
+    border:1.5px solid var(--line);
+  }
+  .info-block h3{font-size:20px;font-weight:800;letter-spacing:-.025em;margin-bottom:16px;color:var(--text);display:flex;align-items:center;gap:10px;}
+  .info-block h3 svg{width:22px;height:22px;color:var(--sky);}
+  .info-block p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:12px;}
+  .info-block p:last-child{margin-bottom:0;}
+  .info-block strong{color:var(--text);font-weight:700;}
+  .info-block a{color:var(--sky);text-decoration:none;font-weight:600;}
+  .info-block a:hover{text-decoration:underline;}
+
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:24px;}
+  .info-item{background:var(--bg-alt);border-radius:var(--radius);padding:20px;border:1px solid var(--line);}
+  .info-item-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-soft);color:var(--sky);display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .info-item-icon svg{width:20px;height:20px;}
+  .info-item h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .info-item p{font-size:13px;color:var(--muted);line-height:1.5;margin:0;}
+
+  /* BOTTOM NAV */
+  .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);z-index:150;padding-bottom:env(safe-area-inset-bottom);}
+  .bottom-nav-inner{display:grid;grid-template-columns:repeat(4,1fr);}
+  .bn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;min-height:56px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;font-family:inherit;transition:color .2s,background .2s;}
+  .bn-item:hover{background:var(--soft);color:var(--text);}
+  .bn-item.active{color:var(--sky);}
+  .bn-item svg{width:22px;height:22px;}
+
+  .error-msg{
+    background:var(--accent-soft);color:var(--accent);
+    padding:20px 24px;border-radius:var(--radius);
+    font-size:14px;font-weight:600;
+    display:none;margin:24px 0;
+  }
+  .error-msg.active{display:block;}
+
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+  @media (max-width:768px){
+    :root{--header-h:100px;}
+    .container{padding:0 16px;}
+    .page-header{padding:40px 0 24px;margin:0 -16px;padding-left:16px;padding-right:16px;}
+    .page-header h1{font-size:clamp(32px,8vw,48px);}
+    nav a{padding:10px 16px;font-size:13px;}
+    .current-weather{padding:32px 24px;}
+    .cw-temp-big{font-size:clamp(56px,16vw,80px);}
+    .cw-details{grid-template-columns:repeat(2,1fr);}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
+    .bottom-nav{display:block;}
+    body{padding-bottom:70px;}
+    .cities-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+    .city-card{padding:16px;}
+    .city-temp-value{font-size:18px;}
+    .info-block{padding:28px 20px;}
+  }
+  @media (max-width:480px){
+    .logo{font-size:16px;}
+    .logo img{width:26px;height:26px;}
+    .header-top{padding:12px 0;}
+    .header-actions{gap:6px;}
+    .social-list{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:1fr;gap:28px;}
+    .footer-bottom{flex-direction:column;align-items:flex-start;}
+    .back-btn{font-size:12px;padding:10px 14px;}
+    .daily-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <a class="logo" href="../index.html">
+        <img src="../file/main.png" alt="Метро New">
+        Метро New <em>International</em>
+      </a>
+      <div class="header-actions">
+        <a class="back-btn" href="../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          На главную
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="nav-wrap" id="navWrap">
+    <div class="container">
+      <nav>
+        <ul>
+          <li><a href="../index.html">Главное</a></li>
+          <li><a href="../world/">Мир</a></li>
+          <li><a href="../technologies/">Технологии</a></li>
+          <li><a href="../culture/">Культура</a></li>
+          <li><a href="../sport/">Спорт</a></li>
+          <li><a href="../weather/" class="active">Погода</a></li>
+          <li><a href="../other/">Другое</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-header">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+      <a href="../index.html">Главное</a>
+      <span class="sep">→</span>
+      <span class="current">Погода</span>
+    </nav>
+    <h1>Погода</h1>
+    <p>Текущая погода и прогноз в 20+ городах мира. Данные обновляются в реальном времени.</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Найти город..." autocomplete="off">
+      <div class="search-spinner" id="searchSpinner"></div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div id="weatherContent">
+    <!-- ТЕКУЩАЯ ПОГОДА -->
+    <div class="current-weather" id="currentWeather">
+      <div class="cw-top">
+        <div>
+          <div class="cw-city" id="cwCity">—</div>
+          <div class="cw-country" id="cwCountry">Загрузка...</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="cw-icon" id="cwIcon">☀️</div>
+          <div class="cw-temp-big"><span id="cwTemp">—</span><span>°C</span></div>
+          <div class="cw-condition" id="cwCondition">—</div>
+        </div>
+      </div>
+      <div class="cw-details">
+        <div class="cw-detail">
+          <div class="cw-detail-label">Ощущается</div>
+          <div class="cw-detail-value" id="cwFeels">—</div>
+        </div>
+        <div class="cw-detail">
+          <div class="cw-detail-label">Ветер</div>
+          <div class="cw-detail-value" id="cwWind">—</div>
+        </div>
+        <div class="cw-detail">
+          <div class="cw-detail-label">Влажность</div>
+          <div class="cw-detail-value" id="cwHumidity">—</div>
+        </div>
+        <div class="cw-detail">
+          <div class="cw-detail-label">Давление</div>
+          <div class="cw-detail-value" id="cwPressure">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПОЧАСОВОЙ -->
+    <section class="forecast-section">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Почасовой прогноз
+      </h2>
+      <div class="hourly-scroll" id="hourlyScroll"></div>
+    </section>
+
+    <!-- НА 7 ДНЕЙ -->
+    <section class="forecast-section">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Прогноз на 7 дней
+      </h2>
+      <div class="daily-grid" id="dailyGrid"></div>
+    </section>
+
+    <!-- ГОРОДА -->
+    <section class="cities-section">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Города
+      </h2>
+      <div class="cities-grid" id="citiesGrid"></div>
+    </section>
+
+    <!-- ИНФО ВНИЗУ -->
+    <div class="info-block">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        О погодном разделе
+      </h3>
+      <p><strong>Источник данных:</strong> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> — бесплатный погодный API без регистрации и ключей. Данные обновляются каждый час.</p>
+      <p><strong>Города по умолчанию:</strong> 20 крупнейших городов мира — Москва, Санкт-Петербург, Лондон, Париж, Нью-Йорк, Токио, Берлин, Мадрид, Рим, Дубай, Пекин, Сеул, Сидней, Торонто, Мехико, Сан-Паулу, Стамбул, Каир, Мумбаи, Бангкок.</p>
+      <p><strong>Поиск:</strong> введите название города на русском или английском — найдём координаты и покажем погоду.</p>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h4>Температура</h4>
+          <p>В градусах Цельсия. «Ощущается как» учитывает ветер и влажность.</p>
+        </div>
+        <div class="info-item">
+          <div class="info-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg></div>
+          <h4>Ветер</h4>
+          <p>Скорость в км/ч. Направление — куда дует.</p>
+        </div>
+        <div class="info-item">
+          <div class="info-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+          <h4>Влажность</h4>
+          <p>Процент влаги в воздухе. Высокая — душно, низкая — сухо.</p>
+        </div>
+        <div class="info-item">
+          <div class="info-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <h4>Давление</h4>
+          <p>В гектопаскалях (гПа). Норма — 1013 гПа.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Метро New</h4>
+        <ul>
+          <li><a href="../help/about/">О нас</a></li>
+          <li><a href="../help/editorial/">Редакция</a></li>
+          <li><a href="../help/contact/">Контакты</a></li>
+          <li><a href="https://kirill12633.github.io/careers.metro.new/">Вакансии</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Рубрики</h4>
+        <ul>
+          <li><a href="../world/">Мир</a></li>
+          <li><a href="../technologies/">Технологии</a></li>
+          <li><a href="../culture/">Культура</a></li>
+          <li><a href="../sport/">Спорт</a></li>
+          <li><a href="../weather/">Погода</a></li>
+          <li><a href="../other/">Другое</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Правовая информация</h4>
+        <ul>
+          <li><a href="../help/privacy/">Политика конфиденциальности</a></li>
+          <li><a href="../help/terms/">Условия использования</a></li>
+          <li><a href="../help/corrections/">Исправления и источники</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Соцсети</h4>
+        <ul class="social-list">
+          <li><a href="https://www.roblox.com/groups/34820737/RP-NEW#!/about" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4V4zm4 4v8h8V8H8z"/></svg> Roblox</a></li>
+          <li><a href="https://discord.com/invite/WjGZBs3HMX" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4.5A19 19 0 0016 3l-.3.6a15 15 0 014 1.5A15 15 0 004 5.1a15 15 0 014-1.5L8 3A19 19 0 004 4.5 20 20 0 003 19a19 19 0 005.5 2l1-2.4a12 12 0 01-2-1l.5-.4a13 13 0 0010 0l.5.4a12 12 0 01-2 1l1 2.4A19 19 0 0021 19a20 20 0 00-1-14.5zM9 16a1.5 1.5 0 010-3 1.5 1.5 0 010 3zm6 0a1.5 1.5 0 010-3 1.5 1.5 0 010 3z"/></svg> Discord</a></li>
+          <li><a href="https://t.me/Metro_New_Official" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 3L2 10.5l6 2 2 6 3.5-3.5 5 3L22 3z"/></svg> Telegram</a></li>
+          <li><a href="https://www.youtube.com/@Metro-RP-NEW-Roblox" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8a3 3 0 00-2-2c-2-.5-8-.5-8-.5s-6 0-8 .5a3 3 0 00-2 2 31 31 0 000 8 3 3 0 002 2c2 .5 8 .5 8 .5s6 0 8-.5a3 3 0 002-2 31 31 0 000-8zM10 15V9l5 3-5 3z"/></svg> YouTube</a></li>
+          <li><a href="https://www.tiktok.com/@metro.new" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3v3a5 5 0 005 5v3a8 8 0 01-5-2v6a6 6 0 11-6-6v3a3 3 0 103 3V3h3z"/></svg> TikTok</a></li>
+          <li><a href="https://boosty.to/metro.new" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h10a6 6 0 010 12H8v4H4V4zm4 4v4h6a2 2 0 000-4H8z"/></svg> Boosty</a></li>
+          <li><a href="https://www.reddit.com/r/Metro_New/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="13" r="6"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><circle cx="18" cy="7" r="2"/></svg> Reddit</a></li>
+          <li><a href="https://www.instagram.com/metro.new.official/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4zm5 5a4 4 0 100 8 4 4 0 000-8zm5-1a1 1 0 100 2 1 1 0 000-2z"/></svg> Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-brand"><img src="../file/main.png" alt="">Метро New International</div>
+      <div class="age-marks"><span class="age-mark">0+</span><span class="age-mark">6+</span><span class="age-mark">12+</span></div>
+      <div>© <span id="copyYear"></span> Метро New International. Все права защищены.</div>
+    </div>
+  </div>
+</footer>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a class="bn-item" href="../index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Главное</span>
+    </a>
+    <a class="bn-item" href="../world/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Мир</span>
+    </a>
+    <a class="bn-item" href="../technologies/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Технологии</span>
+    </a>
+    <a class="bn-item active" href="../weather/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+      <span>Погода</span>
+    </a>
+  </div>
+</nav>
+
+<script>
+const CITIES = [
+  {name:'Москва', country:'Россия', lat:55.7558, lon:37.6173},
+  {name:'Санкт-Петербург', country:'Россия', lat:59.9311, lon:30.3609},
+  {name:'Лондон', country:'Великобритания', lat:51.5074, lon:-0.1278},
+  {name:'Париж', country:'Франция', lat:48.8566, lon:2.3522},
+  {name:'Нью-Йорк', country:'США', lat:40.7128, lon:-74.0060},
+  {name:'Токио', country:'Япония', lat:35.6762, lon:139.6503},
+  {name:'Берлин', country:'Германия', lat:52.5200, lon:13.4050},
+  {name:'Мадрид', country:'Испания', lat:40.4168, lon:-3.7038},
+  {name:'Рим', country:'Италия', lat:41.9028, lon:12.4964},
+  {name:'Дубай', country:'ОАЭ', lat:25.2048, lon:55.2708},
+  {name:'Пекин', country:'Китай', lat:39.9042, lon:116.4074},
+  {name:'Сеул', country:'Южная Корея', lat:37.5665, lon:126.9780},
+  {name:'Сидней', country:'Австралия', lat:-33.8688, lon:151.2093},
+  {name:'Торонто', country:'Канада', lat:43.6532, lon:-79.3832},
+  {name:'Мехико', country:'Мексика', lat:19.4326, lon:-99.1332},
+  {name:'Сан-Паулу', country:'Бразилия', lat:-23.5505, lon:-46.6333},
+  {name:'Стамбул', country:'Турция', lat:41.0082, lon:28.9784},
+  {name:'Каир', country:'Египет', lat:30.0444, lon:31.2357},
+  {name:'Мумбаи', country:'Индия', lat:19.0760, lon:72.8777},
+  {name:'Бангкок', country:'Таиланд', lat:13.7563, lon:100.5018}
+];
+
+let currentCity = CITIES[0];
+let currentWeatherData = null;
+
+document.getElementById('copyYear').textContent = new Date().getFullYear();
+
+function initStickyNav(){
+  const navWrap = document.getElementById('navWrap');
+  if(!navWrap) return;
+  const update = () => navWrap.classList.toggle('scrolled', window.scrollY > 40);
+  window.addEventListener('scroll', update, {passive:true});
+  update();
+}
+
+/* Иконки погоды по коду WMO */
+function weatherIcon(code){
+  if(code === 0) return '☀️';
+  if(code === 1 || code === 2) return '🌤️';
+  if(code === 3) return '☁️';
+  if(code === 45 || code === 48) return '🌫️';
+  if(code >= 51 && code <= 57) return '🌦️';
+  if(code >= 61 && code <= 67) return '🌧️';
+  if(code >= 71 && code <= 77) return '❄️';
+  if(code >= 80 && code <= 82) return '🌧️';
+  if(code >= 85 && code <= 86) return '🌨️';
+  if(code >= 95 && code <= 99) return '⛈️';
+  return '☀️';
+}
+
+function weatherText(code){
+  if(code === 0) return 'Ясно';
+  if(code === 1) return 'Преимущественно ясно';
+  if(code === 2) return 'Переменная облачность';
+  if(code === 3) return 'Пасмурно';
+  if(code === 45 || code === 48) return 'Туман';
+  if(code >= 51 && code <= 57) return 'Морось';
+  if(code >= 61 && code <= 67) return 'Дождь';
+  if(code >= 71 && code <= 77) return 'Снег';
+  if(code >= 80 && code <= 82) return 'Ливень';
+  if(code >= 85 && code <= 86) return 'Снегопад';
+  if(code >= 95 && code <= 99) return 'Гроза';
+  return 'Ясно';
+}
+
+const DAYS_RU = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('active');
+}
+function hideError(){
+  document.getElementById('errorMsg').classList.remove('active');
+}
+
+/* Загрузка погоды */
+async function loadWeather(city){
+  hideError();
+  currentCity = city;
+  document.getElementById('cwCity').textContent = city.name;
+  document.getElementById('cwCountry').textContent = city.country;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    currentWeatherData = data;
+    renderWeather(data, city);
+    loadAllCitiesWeather();
+  } catch(err){
+    console.error(err);
+    showError('Не удалось загрузить погоду. Попробуйте обновить страницу.');
+  }
+}
+
+function renderWeather(data, city){
+  const c = data.current;
+  document.getElementById('cwCity').textContent = city.name;
+  document.getElementById('cwCountry').textContent = city.country;
+  document.getElementById('cwTemp').textContent = Math.round(c.temperature_2m);
+  document.getElementById('cwFeels').textContent = Math.round(c.apparent_temperature) + '°';
+  document.getElementById('cwWind').textContent = Math.round(c.wind_speed_10m) + ' км/ч';
+  document.getElementById('cwHumidity').textContent = c.relative_humidity_2m + '%';
+  document.getElementById('cwPressure').textContent = Math.round(c.surface_pressure) + ' гПа';
+  document.getElementById('cwIcon').textContent = weatherIcon(c.weather_code);
+  document.getElementById('cwCondition').textContent = weatherText(c.weather_code);
+
+  /* Почасовой */
+  const hourly = data.hourly;
+  const now = new Date();
+  const hourNow = now.getHours();
+  const hourlyHtml = [];
+  for(let i = hourNow; i < hourNow + 24 && i < hourly.time.length; i++){
+    const t = new Date(hourly.time[i]);
+    const hh = t.getHours().toString().padStart(2,'0') + ':00';
+    hourlyHtml.push(`
+      <div class="hourly-item">
+        <div class="hourly-time">${hh}</div>
+        <div class="hourly-icon">${weatherIcon(hourly.weather_code[i])}</div>
+        <div class="hourly-temp">${Math.round(hourly.temperature_2m[i])}°</div>
+      </div>
+    `);
+  }
+  document.getElementById('hourlyScroll').innerHTML = hourlyHtml.join('');
+
+  /* На 7 дней */
+  const daily = data.daily;
+  const dailyHtml = [];
+  for(let i = 0; i < daily.time.length; i++){
+    const d = new Date(daily.time[i]);
+    const dayName = DAYS_RU[d.getDay()];
+    const dateStr = d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    const precip = daily.precipitation_probability_max[i] || 0;
+    dailyHtml.push(`
+      <div class="daily-item">
+        <div class="daily-day">${dayName}</div>
+        <div class="daily-date">${dateStr}</div>
+        <div class="daily-icon">${weatherIcon(daily.weather_code[i])}</div>
+        <div class="daily-temp">
+          <span class="daily-temp-max">${Math.round(daily.temperature_2m_max[i])}°</span>
+          <span class="daily-temp-min">${Math.round(daily.temperature_2m_min[i])}°</span>
+        </div>
+        ${precip > 0 ? `<div class="daily-precip">💧 ${precip}%</div>` : ''}
+      </div>
+    `);
+  }
+  document.getElementById('dailyGrid').innerHTML = dailyHtml.join('');
+}
+
+/* Все города — карточки с температурой */
+async function loadAllCitiesWeather(){
+  const grid = document.getElementById('citiesGrid');
+  if(grid.children.length && grid.children.length === CITIES.length){
+    /* Уже загружено — только обновить активную */
+    grid.querySelectorAll('.city-card').forEach((card,i) => {
+      card.classList.toggle('active', CITIES[i].name === currentCity.name);
+    });
+    return;
+  }
+
+  /* Первая загрузка — скелетоны */
+  grid.innerHTML = CITIES.map(() => `<div class="skeleton" style="height:80px;border-radius:var(--radius);"></div>`).join('');
+
+  const results = await Promise.all(CITIES.map(async (city) => {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&timezone=auto`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return {city, temp: Math.round(data.current.temperature_2m), code: data.current.weather_code};
+    } catch {
+      return {city, temp: null, code: null};
+    }
+  }));
+
+  grid.innerHTML = results.map(({city, temp, code}, i) => `
+    <div class="city-card ${city.name === currentCity.name ? 'active' : ''}" onclick="loadWeather(CITIES[${i}])" style="animation-delay:${i*0.03}s">
+      <div class="city-info">
+        <div class="city-name">${city.name}</div>
+        <div class="city-country">${city.country}</div>
+      </div>
+      <div class="city-temp">
+        <div class="city-temp-value">${temp !== null ? temp + '°' : '—'}</div>
+        <div class="city-temp-icon">${code !== null ? weatherIcon(code) : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* Поиск города */
+let searchTimeout = null;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const query = e.target.value.trim();
+  const results = document.getElementById('searchResults');
+  const spinner = document.getElementById('searchSpinner');
+
+  if(query.length < 2){
+    results.classList.remove('active');
+    spinner.classList.remove('active');
+    return;
+  }
+
+  /* Сначала поиск в локальном списке */
+  const local = CITIES.filter(c =>
+    c.name.toLowerCase().includes(query.toLowerCase()) ||
+    c.country.toLowerCase().includes(query.toLowerCase())
+  );
+
+  if(local.length){
+    results.innerHTML = local.map((c) => `
+      <div class="search-result" onclick="selectCity('${c.name.replace(/'/g, "\\'")}', ${c.lat}, ${c.lon}, '${c.country.replace(/'/g, "\\'")}')">
+        <div>
+          <div class="search-result-name">${c.name}</div>
+          <div class="search-result-country">${c.country}</div>
+        </div>
+      </div>
+    `).join('');
+    results.classList.add('active');
+  } else {
+    results.classList.remove('active');
+  }
+
+  /* Также ищем через Open-Meteo Geocoding */
+  spinner.classList.add('active');
+  searchTimeout = setTimeout(async () => {
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=ru&format=json`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if(data.results && data.results.length){
+        const html = data.results.map((r) => `
+          <div class="search-result" onclick="selectCity('${r.name.replace(/'/g, "\\'")}', ${r.latitude}, ${r.longitude}, '${(r.country || '').replace(/'/g, "\\'")}')">
+            <div>
+              <div class="search-result-name">${r.name}</div>
+              <div class="search-result-country">${r.country || ''}${r.admin1 ? ' · ' + r.admin1 : ''}</div>
+            </div>
+          </div>
+        `).join('');
+        results.innerHTML = html;
+        results.classList.add('active');
+      }
+    } catch(err){
+      console.error('search:', err);
+    } finally {
+      spinner.classList.remove('active');
+    }
+  }, 400);
+});
+
+document.getElementById('searchInput').addEventListener('blur', () => {
+  setTimeout(() => document.getElementById('searchResults').classList.remove('active'), 200);
+});
+
+function selectCity(name, lat, lon, country){
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').classList.remove('active');
+  loadWeather({name, country, lat, lon});
+}
+
+/* Старт */
+loadWeather(CITIES[0]);
+initStickyNav();
+</script>
+</body>
+</html>
