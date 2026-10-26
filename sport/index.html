@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Спорт — Метро New International</title>
+<meta name="description" content="Спорт — Метро New International. Матчи, турниры, спортсмены и события.">
+<meta property="og:title" content="Спорт — Метро New International">
+<meta property="og:description" content="Новости спорта">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kirill12633.github.io/press.metro.new/sport/">
+<meta property="og:image" content="https://kirill12633.github.io/press.metro.new/file/main.png">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="../file/main.png" type="image/png">
+<link rel="canonical" href="https://kirill12633.github.io/press.metro.new/sport/" id="canonicalLink">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f8f9fc;--bg-alt:#fff;--text:#0f172a;--text-soft:#1e293b;
+    --muted:#64748b;--muted-soft:#94a3b8;--line:#e8ecf3;--line-soft:#f1f5f9;
+    --accent:#ef4444;--accent-soft:#fee2e2;--accent-hover:#dc2626;
+    --urgent:#dc2626;--live:#ef4444;--soft:#f1f5f9;--card:#fff;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+    --shadow:0 4px 16px rgba(15,23,42,.06);
+    --shadow-md:0 8px 24px rgba(15,23,42,.08);
+    --shadow-lg:0 16px 48px rgba(15,23,42,.12);
+    --radius-sm:10px;--radius:16px;--radius-lg:24px;--radius-full:999px;
+    --header-h:108px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:'cv11','ss01';}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px;}
+  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+  @keyframes urgentPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5);}50%{box-shadow:0 0 0 8px rgba(220,38,38,0);}}
+
+  .skeleton{background:linear-gradient(90deg,#eef2f8 0%,#f8fafc 50%,#eef2f8 100%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-sm);}
+  .skel-card{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);}
+  .skel-img{aspect-ratio:16/9;}
+  .skel-body{padding:20px 22px 24px;}
+  .skel-line{height:14px;margin-bottom:10px;}
+  .skel-line.short{width:40%;}
+  .skel-line.med{width:70%;}
+  .skel-line.tall{height:20px;}
+
+  /* ШАПКА */
+  header{background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;}
+  .header-top{display:flex;justify-content:space-between;align-items:center;padding:16px 0;gap:16px;}
+  .logo{font-size:19px;font-weight:800;letter-spacing:-.03em;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px;transition:opacity .2s;}
+  .logo:hover{opacity:.75;}
+  .logo img{width:32px;height:32px;border-radius:var(--radius-sm);object-fit:cover;box-shadow:var(--shadow-sm);transition:transform .3s;}
+  .logo:hover img{transform:rotate(-8deg) scale(1.08);}
+  .logo em{font-style:normal;color:var(--muted);font-weight:500;font-size:13px;letter-spacing:0;}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .back-btn{display:inline-flex;align-items:center;gap:8px;background:var(--bg-alt);border:1.5px solid var(--line);color:var(--text-soft);padding:10px 18px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border-radius:var(--radius-full);text-decoration:none;transition:background .2s,transform .15s;min-height:44px;}
+  .back-btn:hover{background:var(--soft);transform:translateX(-2px);}
+  .back-btn svg{width:16px;height:16px;}
+
+  /* STICKY NAV */
+  .nav-wrap{position:sticky;top:var(--header-h);z-index:99;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);transition:box-shadow .3s,background .3s;}
+  .nav-wrap.scrolled{box-shadow:0 4px 20px rgba(15,23,42,.08);background:rgba(255,255,255,.98);}
+  nav ul{display:flex;gap:6px;list-style:none;overflow-x:auto;scrollbar-width:none;padding:10px 0;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
+  nav ul::-webkit-scrollbar{display:none;}
+  nav a{display:flex;align-items:center;gap:6px;padding:10px 18px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;border-radius:var(--radius-full);transition:background .2s,color .2s,transform .2s;scroll-snap-align:start;min-height:44px;}
+  nav a:hover{background:var(--soft);color:var(--text);transform:translateY(-1px);}
+  nav a.active{background:var(--text);color:#fff;font-weight:600;}
+
+  /* PAGE HEADER */
+  .page-header{padding:56px 0 40px;background:linear-gradient(180deg,#fff 0%,var(--bg) 100%);margin:0 -24px;padding-left:24px;padding-right:24px;animation:fadeIn .6s ease;}
+  .breadcrumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .breadcrumbs a{color:var(--muted);text-decoration:none;transition:color .2s;font-weight:500;}
+  .breadcrumbs a:hover{color:var(--accent);}
+  .breadcrumbs span.sep{color:var(--muted-soft);}
+  .breadcrumbs span.current{color:var(--text-soft);font-weight:600;}
+
+  .page-header h1{font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:-.035em;line-height:1.05;margin-bottom:16px;background:linear-gradient(135deg,#0f172a 0%,#334155 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:fadeInUp .6s .1s both;}
+  .page-header p{font-size:17px;color:var(--muted);max-width:640px;line-height:1.6;animation:fadeInUp .6s .2s both;}
+
+  /* DATE FILTER */
+  .date-filter{display:flex;gap:8px;padding:24px 0;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);margin-bottom:32px;}
+  .date-filter-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--muted);margin-right:8px;}
+  .date-chip{padding:8px 16px;background:var(--bg-alt);border:1.5px solid var(--line);border-radius:var(--radius-full);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--muted);transition:background .2s,color .2s,border-color .2s,transform .2s;min-height:40px;display:inline-flex;align-items:center;gap:6px;}
+  .date-chip:hover{background:var(--soft);color:var(--text);transform:translateY(-1px);}
+  .date-chip.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .date-chip svg{width:14px;height:14px;}
+
+  /* НОВОСТИ */
+  .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px;padding:0 0 72px;animation:fadeIn .8s ease;}
+  .card-link{text-decoration:none;color:inherit;display:block;background:var(--card);border-radius:var(--radius-lg);padding:0;overflow:hidden;box-shadow:var(--shadow);transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;animation:fadeInUp .6s both;position:relative;}
+  .card-link:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg);}
+  .card-img{aspect-ratio:16/9;background:var(--soft);overflow:hidden;position:relative;}
+  .card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s;}
+  .card-link:hover .card-img img{transform:scale(1.08);}
+  .card-content{padding:22px 24px 26px;}
+  .card-tagline{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .card-category{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700;background:var(--accent-soft);padding:4px 10px;border-radius:var(--radius-full);transition:transform .2s;}
+  .card-link:hover .card-category{transform:translateX(4px);}
+  .card-urgent{display:inline-flex;align-items:center;gap:5px;background:var(--urgent);color:#fff;font-size:10px;font-weight:800;padding:4px 9px;border-radius:var(--radius-full);letter-spacing:.08em;text-transform:uppercase;animation:urgentPulse 2s infinite;}
+  .card-urgent::before{content:'';width:5px;height:5px;background:#fff;border-radius:50%;}
+  .card h3{font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-bottom:10px;transition:color .2s;}
+  .card-link:hover h3{color:var(--accent);}
+  .card p{font-size:15px;color:var(--muted);margin-bottom:18px;line-height:1.55;}
+  .card .meta{font-size:12px;color:var(--muted-soft);padding-top:14px;border-top:1px solid var(--line-soft);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .read-time{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;background:var(--soft);border-radius:var(--radius-full);font-size:11px;font-weight:600;}
+  .read-time svg{width:11px;height:11px;}
+  .card-cta{margin-top:16px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--accent);transition:gap .2s;}
+  .card-link:hover .card-cta{gap:10px;}
+  .card-cta svg{width:14px;height:14px;}
+
+  .empty{grid-column:1/-1;text-align:center;padding:80px 20px;background:var(--card);border-radius:var(--radius);border:2px dashed var(--line);}
+  .empty-icon{width:80px;height:80px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+  .empty-icon svg{width:36px;height:36px;color:var(--muted-soft);}
+  .empty h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
+  .empty p{font-size:15px;color:var(--muted);}
+
+  /* ФУТЕР */
+  footer{background:linear-gradient(180deg,var(--bg-alt) 0%,#eef2f8 100%);padding:56px 0 40px;border-top:1px solid var(--line);}
+  .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:48px;margin-bottom:48px;}
+  .footer-col h4{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--text);margin-bottom:20px;}
+  .footer-col ul{list-style:none;}
+  .footer-col li{margin-bottom:12px;}
+  .footer-col a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .2s;font-weight:500;}
+  .footer-col a:hover{color:var(--accent);}
+  .social-list{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 24px;}
+  .social-list li{margin-bottom:0 !important;}
+  .social-list a{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s;padding:6px 0;}
+  .social-list a:hover{color:var(--text);}
+  .social-list svg{width:16px;height:16px;opacity:.7;flex-shrink:0;transition:opacity .2s,transform .2s;}
+  .social-list a:hover svg{opacity:1;transform:scale(1.1);}
+  .footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;padding-top:28px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);align-items:center;}
+  .footer-brand{display:flex;align-items:center;gap:12px;font-weight:800;color:var(--text);font-size:15px;}
+  .footer-brand img{width:28px;height:28px;border-radius:8px;box-shadow:var(--shadow-sm);}
+  .age-marks{display:flex;gap:6px;align-items:center;font-weight:600;color:var(--text-soft);}
+  .age-mark{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 8px;border:1.5px solid var(--line);border-radius:6px;font-size:11px;font-weight:700;background:var(--bg-alt);color:var(--muted);}
+
+  /* BOTTOM NAV */
+  .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-top:1px solid var(--line);z-index:150;padding-bottom:env(safe-area-inset-bottom);}
+  .bottom-nav-inner{display:grid;grid-template-columns:repeat(4,1fr);}
+  .bn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;min-height:56px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;font-family:inherit;transition:color .2s,background .2s;}
+  .bn-item:hover{background:var(--soft);color:var(--text);}
+  .bn-item.active{color:var(--accent);}
+  .bn-item svg{width:22px;height:22px;}
+
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+  @media (max-width:768px){
+    :root{--header-h:100px;}
+    .container{padding:0 16px;}
+    .page-header{padding:40px 0 32px;margin:0 -16px;padding-left:16px;padding-right:16px;}
+    .page-header h1{font-size:clamp(32px,8vw,48px);}
+    nav a{padding:10px 16px;font-size:13px;}
+    .news-grid{grid-template-columns:1fr;gap:20px;padding:0 0 48px;}
+    .footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
+    .bottom-nav{display:block;}
+    body{padding-bottom:70px;}
+    .date-filter{padding:20px 0;}
+  }
+  @media (max-width:480px){
+    .logo{font-size:16px;}
+    .logo img{width:26px;height:26px;}
+    .header-top{padding:12px 0;}
+    .header-actions{gap:6px;}
+    .social-list{grid-template-columns:1fr;}
+    .footer-grid{grid-template-columns:1fr;gap:28px;}
+    .footer-bottom{flex-direction:column;align-items:flex-start;}
+    .back-btn{font-size:12px;padding:10px 14px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <a class="logo" href="../index.html">
+        <img src="../file/main.png" alt="Метро New">
+        Метро New <em>International</em>
+      </a>
+      <div class="header-actions">
+        <a class="back-btn" href="../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          На главную
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="nav-wrap" id="navWrap">
+    <div class="container">
+      <nav>
+        <ul>
+          <li><a href="../index.html">Главное</a></li>
+          <li><a href="../world/">Мир</a></li>
+          <li><a href="../technologies/">Технологии</a></li>
+          <li><a href="../culture/">Культура</a></li>
+          <li><a href="../sport/" class="active">Спорт</a></li>
+          <li><a href="../weather/">Погода</a></li>
+          <li><a href="../other/">Другое</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-header">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+      <a href="../index.html">Главное</a>
+      <span class="sep">→</span>
+      <span class="current">Спорт</span>
+    </nav>
+    <h1>Спорт</h1>
+    <p>Матчи, турниры, спортсмены и главные события из мира спорта.</p>
+  </div>
+
+  <div class="date-filter" id="dateFilter">
+    <span class="date-filter-label">Период:</span>
+    <button class="date-chip active" data-filter="all" onclick="setDateFilter('all')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Всё</button>
+    <button class="date-chip" data-filter="hour" onclick="setDateFilter('hour')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>За час</button>
+    <button class="date-chip" data-filter="day" onclick="setDateFilter('day')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>День</button>
+    <button class="date-chip" data-filter="week" onclick="setDateFilter('week')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Неделя</button>
+  </div>
+
+  <section class="news-grid" id="newsGrid">
+    <article class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton skel-line short"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line"></div></div></article>
+    <article class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton skel-line short"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line"></div></div></article>
+    <article class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skeleton skel-line short"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line tall"></div><div class="skeleton skel-line"></div></div></article>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Метро New</h4>
+        <ul>
+          <li><a href="../help/about/">О нас</a></li>
+          <li><a href="../help/editorial/">Редакция</a></li>
+          <li><a href="../help/contact/">Контакты</a></li>
+          <li><a href="https://kirill12633.github.io/careers.metro.new/">Вакансии</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Рубрики</h4>
+        <ul>
+          <li><a href="../world/">Мир</a></li>
+          <li><a href="../technologies/">Технологии</a></li>
+          <li><a href="../culture/">Культура</a></li>
+          <li><a href="../sport/">Спорт</a></li>
+          <li><a href="../weather/">Погода</a></li>
+          <li><a href="../other/">Другое</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Правовая информация</h4>
+        <ul>
+          <li><a href="../help/privacy/">Политика конфиденциальности</a></li>
+          <li><a href="../help/terms/">Условия использования</a></li>
+          <li><a href="../help/corrections/">Исправления и источники</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Соцсети</h4>
+        <ul class="social-list">
+          <li><a href="https://www.roblox.com/groups/34820737/RP-NEW#!/about" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4V4zm4 4v8h8V8H8z"/></svg> Roblox</a></li>
+          <li><a href="https://discord.com/invite/WjGZBs3HMX" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4.5A19 19 0 0016 3l-.3.6a15 15 0 014 1.5A15 15 0 004 5.1a15 15 0 014-1.5L8 3A19 19 0 004 4.5 20 20 0 003 19a19 19 0 005.5 2l1-2.4a12 12 0 01-2-1l.5-.4a13 13 0 0010 0l.5.4a12 12 0 01-2 1l1 2.4A19 19 0 0021 19a20 20 0 00-1-14.5zM9 16a1.5 1.5 0 010-3 1.5 1.5 0 010 3zm6 0a1.5 1.5 0 010-3 1.5 1.5 0 010 3z"/></svg> Discord</a></li>
+          <li><a href="https://t.me/Metro_New_Official" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 3L2 10.5l6 2 2 6 3.5-3.5 5 3L22 3z"/></svg> Telegram</a></li>
+          <li><a href="https://www.youtube.com/@Metro-RP-NEW-Roblox" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8a3 3 0 00-2-2c-2-.5-8-.5-8-.5s-6 0-8 .5a3 3 0 00-2 2 31 31 0 000 8 3 3 0 002 2c2 .5 8 .5 8 .5s6 0 8-.5a3 3 0 002-2 31 31 0 000-8zM10 15V9l5 3-5 3z"/></svg> YouTube</a></li>
+          <li><a href="https://www.tiktok.com/@metro.new" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3v3a5 5 0 005 5v3a8 8 0 01-5-2v6a6 6 0 11-6-6v3a3 3 0 103 3V3h3z"/></svg> TikTok</a></li>
+          <li><a href="https://boosty.to/metro.new" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h10a6 6 0 010 12H8v4H4V4zm4 4v4h6a2 2 0 000-4H8z"/></svg> Boosty</a></li>
+          <li><a href="https://www.reddit.com/r/Metro_New/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="13" r="6"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><circle cx="18" cy="7" r="2"/></svg> Reddit</a></li>
+          <li><a href="https://www.instagram.com/metro.new.official/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4zm5 5a4 4 0 100 8 4 4 0 000-8zm5-1a1 1 0 100 2 1 1 0 000-2z"/></svg> Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-brand"><img src="../file/main.png" alt="">Метро New International</div>
+      <div class="age-marks"><span class="age-mark">0+</span><span class="age-mark">6+</span><span class="age-mark">12+</span></div>
+      <div>© <span id="copyYear"></span> Метро New International. Все права защищены.</div>
+    </div>
+  </div>
+</footer>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a class="bn-item" href="../index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Главное</span>
+    </a>
+    <a class="bn-item" href="../world/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Мир</span>
+    </a>
+    <a class="bn-item" href="../technologies/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Технологии</span>
+    </a>
+    <a class="bn-item active" href="../sport/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/><path d="M2 12h20"/></svg>
+      <span>Спорт</span>
+    </a>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<script>
+const SUPABASE_URL = 'https://sykrarmpxorjdwglgftq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_kXF-MxD6dZhOw3qJNSSqeg__Z7KUT26';
+const CATEGORY_SLUG = 'sport';
+const CATEGORY_NAME = 'Спорт';
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allNewsCache = [];
+let currentDateFilter = 'all';
+
+document.getElementById('copyYear').textContent = new Date().getFullYear();
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const fmtDate = d => new Date(d).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+function readingTime(text){
+  const words = String(text || '').trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 200)) + ' мин';
+}
+
+function initStickyNav(){
+  const navWrap = document.getElementById('navWrap');
+  if(!navWrap) return;
+  const update = () => navWrap.classList.toggle('scrolled', window.scrollY > 40);
+  window.addEventListener('scroll', update, {passive:true});
+  update();
+}
+
+function setDateFilter(filter){
+  currentDateFilter = filter;
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+  renderNews();
+}
+
+function renderNews(){
+  const now = new Date();
+  const thresholds = { hour: 60*60*1000, day: 24*60*60*1000, week: 7*24*60*60*1000 };
+  let list = allNewsCache;
+  if(currentDateFilter !== 'all'){
+    const t = thresholds[currentDateFilter];
+    list = list.filter(n => (now - new Date(n.published_at)) <= t);
+  }
+
+  const grid = document.getElementById('newsGrid');
+  if(!list.length){
+    grid.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/><path d="M2 12h20"/></svg></div><h3>${allNewsCache.length ? 'Нет новостей за этот период' : 'Пока нет новостей в рубрике «Спорт»'}</h3><p>${allNewsCache.length ? 'Попробуйте выбрать другой период' : 'Загляните позже — редакция уже готовит материалы'}</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map((n,i) => {
+    const readMin = readingTime(n.body || n.excerpt);
+    return `
+      <article class="card">
+        <a class="card-link" href="../?article=${n.id}" style="animation-delay:${i*0.05}s">
+          ${n.cover_image?`<div class="card-img"><img src="${escapeHtml(n.cover_image)}" alt="" loading="lazy"></div>`:''}
+          <div class="card-content">
+            <div class="card-tagline">
+              ${n.is_urgent ? '<span class="card-urgent">Срочно</span>' : ''}
+              <span class="card-category">${CATEGORY_NAME}</span>
+            </div>
+            <h3>${escapeHtml(n.title)}</h3>
+            <p>${escapeHtml(n.excerpt||'')}</p>
+            <div class="meta">
+              <span>${fmtDate(n.published_at)}</span>
+              ${n.author?`<span>${escapeHtml(n.author)}</span>`:''}
+              <span class="read-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${readMin}</span>
+            </div>
+            <div class="card-cta">Читать <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
+        </a>
+      </article>`;
+  }).join('');
+}
+
+async function loadNews(){
+  try {
+    const { data, error } = await db.from('news').select('*').eq('category_slug', CATEGORY_SLUG).order('published_at',{ascending:false});
+    if(error) throw error;
+    allNewsCache = data || [];
+    renderNews();
+    initStickyNav();
+  } catch(err){
+    console.error('loadNews:', err);
+    document.getElementById('newsGrid').innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3>Не удалось загрузить новости</h3><p>Проверьте подключение и обновите страницу</p></div>`;
+  }
+}
+
+loadNews();
+</script>
+</body>
+</html>
