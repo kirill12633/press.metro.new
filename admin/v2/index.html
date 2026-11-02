@@ -443,7 +443,7 @@ kbd{display:inline-block;padding:3px 8px;background:var(--soft);border:1px solid
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
-<!-- PART2 -->
+
 
 <script>
 const SUPABASE_URL='https://sykrarmpxorjdwglgftq.supabase.co';
@@ -726,12 +726,546 @@ async function deleteNews(id){
   const {error}=await db.from('news').update({deleted_at:new Date().toISOString()}).eq('id',id);
   if(error){toast('Ошибка','error');return;}
   toast('Перемещено в корзину');loadNews();loadStats();
-}alter table news add column if not exists photo_author text;
-alter table news add column if not exists user_id uuid references auth.users(id);
-alter table news add column if not exists deleted_at timestamptz;
-alter table admins add column if not exists totp_secret text;
-alter table admins add column if not exists totp_enabled boolean default false;
-alter table videos add column if not exists cover_image text;
-alter table videos add column if not exists sort_order int default 0;
-update videos set sort_order = id where sort_order is null or sort_order = 0;
-create index if not exists idx_news_deleted_at on news(deleted_at);
+}
+/* ===== СПИСОК ===== */
+function loadPublishedTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="toolbar">
+      <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="newsSearch" placeholder="Поиск..." oninput="renderNewsList()"></div>
+      <select id="newsCategoryFilter" onchange="renderNewsList()"><option value="">Все категории</option>${Object.entries(CATEGORY_NAMES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+      <select id="newsStatusFilter" onchange="renderNewsList()"><option value="">Все статусы</option><option value="published">Опубликовано</option><option value="draft">Черновики</option><option value="scheduled">Запланировано</option><option value="urgent">Срочные</option></select>
+      <select id="newsAuthorFilter" onchange="renderNewsList()"><option value="">Все авторы</option><option value="mine">👤 Только мои</option></select>
+      <select id="newsSortFilter" onchange="renderNewsList()"><option value="date_desc">Новые</option><option value="date_asc">Старые</option><option value="title_asc">А-Я</option></select>
+      <button class="toolbar-btn danger" id="bulkDeleteBtn" onclick="bulkDeleteNews()" disabled>В корзину (<span id="bulkCount">0</span>)</button>
+    </div>
+    <div class="list-header"><h3>Все новости <span class="list-count" id="newsCount"></span></h3></div>
+    <div class="admin-list" id="adminList"><div class="empty"><p>Загрузка...</p></div></div>
+    <div class="pagination" id="newsPagination"></div>`;
+  loadNews();
+}
+
+async function loadNews(){
+  const {data,error}=await db.from('news').select('*').is('deleted_at',null).order('published_at',{ascending:false});
+  if(error){document.getElementById('adminList').innerHTML='<div class="empty"><h3>Ошибка</h3></div>';return;}
+  allNewsCache=data||[];
+  renderNewsList();
+}
+
+function renderNewsList(){
+  const s=(document.getElementById('newsSearch')?.value||'').toLowerCase().trim();
+  const c=document.getElementById('newsCategoryFilter')?.value||'';
+  const st=document.getElementById('newsStatusFilter')?.value||'';
+  const au=document.getElementById('newsAuthorFilter')?.value||'';
+  const sort=document.getElementById('newsSortFilter')?.value||'date_desc';
+  let list=[...allNewsCache];
+  if(s)list=list.filter(n=>(n.title||'').toLowerCase().includes(s));
+  if(c)list=list.filter(n=>n.category_slug===c);
+  if(st==='published')list=list.filter(n=>n.status==='published'||!n.status);
+  if(st==='draft')list=list.filter(n=>n.status==='draft');
+  if(st==='scheduled')list=list.filter(n=>n.status==='scheduled');
+  if(st==='urgent')list=list.filter(n=>n.is_urgent===true);
+  if(au==='mine'&&currentUserId)list=list.filter(n=>n.user_id===currentUserId);
+  if(sort==='date_desc')list.sort((a,b)=>new Date(b.published_at)-new Date(a.published_at));
+  else if(sort==='date_asc')list.sort((a,b)=>new Date(a.published_at)-new Date(b.published_at));
+  else if(sort==='title_asc')list.sort((a,b)=>(a.title||'').localeCompare(b.title||'','ru'));
+  const total=list.length;const pages=Math.ceil(total/PER_PAGE)||1;if(currentPage>pages)currentPage=pages;
+  const start=(currentPage-1)*PER_PAGE;const pageList=list.slice(start,start+PER_PAGE);
+  const cntEl=document.getElementById('newsCount');if(cntEl)cntEl.innerHTML=`<strong>${total}</strong>`;
+  const listEl=document.getElementById('adminList');if(!listEl)return;
+  if(!pageList.length){listEl.innerHTML='<div class="empty"><h3>Ничего не найдено</h3></div>';renderPagination(0,1);return;}
+  listEl.innerHTML=pageList.map(n=>{
+    const statusLabel=n.status==='draft'?'Черновик':n.status==='scheduled'?'Запланировано':'Опубликовано';
+    const statusClass=n.status==='draft'?'draft':n.status==='scheduled'?'scheduled':'published';
+    const isMine=n.user_id===currentUserId;
+    return `<div class="admin-item">
+      <input type="checkbox" class="admin-item-checkbox" data-id="${n.id}" onchange="toggleSelect(this)" ${selectedIds.has(n.id)?'checked':''}>
+      ${n.cover_image?`<div class="admin-item-img"><img src="${escapeHtml(n.cover_image)}" alt=""></div>`:'<div class="admin-item-img" style="display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:11px;">Нет</div>'}
+      <div class="admin-item-body">
+        <div class="admin-item-badges"><span class="admin-badge cat">${escapeHtml(catName(n.category_slug))}</span><span class="admin-badge ${statusClass}">${statusLabel}</span>${isMine?'<span class="admin-badge mine">Моя</span>':''}${n.is_urgent?'<span class="admin-badge urgent">Срочно</span>':''}${n.is_new?'<span class="admin-badge new">NEW</span>':''}</div>
+        <div class="admin-item-title">${escapeHtml(n.title)}</div>
+        <div class="admin-item-meta"><span>${fmtDate(n.published_at)}</span>${n.author?`<span>· ${escapeHtml(n.author)}</span>`:''}${n.photo_author?`<span>· 📷 ${escapeHtml(n.photo_author)}</span>`:''}</div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="action-btn edit" onclick="editNews(${Number(n.id)})" title="Ред."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn duplicate" onclick="duplicateNews(${Number(n.id)})" title="Копия"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button class="action-btn danger" onclick="deleteNews(${Number(n.id)})" title="В корзину"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+  renderPagination(total,pages);updateBulkUI();
+}
+
+function renderPagination(total,pages){const el=document.getElementById('newsPagination');if(!el)return;if(pages<=1){el.innerHTML='';return;}let html=`<button class="page-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>←</button>`;for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-currentPage)<=1)html+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;else if(Math.abs(i-currentPage)===2)html+=`<span style="color:var(--muted)">…</span>`;}html+=`<button class="page-btn" onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}>→</button>`;el.innerHTML=html;}
+function changePage(p){const pages=Math.ceil(allNewsCache.length/PER_PAGE)||1;if(p<1||p>pages)return;currentPage=p;renderNewsList();}
+function toggleSelect(cb){const id=Number(cb.dataset.id);if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);updateBulkUI();}
+function updateBulkUI(){const b=document.getElementById('bulkDeleteBtn');const c=document.getElementById('bulkCount');if(!b||!c)return;c.textContent=selectedIds.size;b.disabled=selectedIds.size===0;}
+async function bulkDeleteNews(){
+  if(!selectedIds.size)return;
+  if(!confirm(`Переместить в корзину ${selectedIds.size} новостей?`))return;
+  const {error}=await db.from('news').update({deleted_at:new Date().toISOString()}).in('id',[...selectedIds]);
+  if(error){toast('Ошибка','error');return;}
+  toast(`В корзину: ${selectedIds.size}`);selectedIds.clear();loadNews();loadStats();
+}
+
+/* ===== КОРЗИНА ===== */
+async function loadTrashTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="toolbar">
+      <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="trashSearch" placeholder="Поиск в корзине..." oninput="renderTrashList()"></div>
+      <button class="toolbar-btn danger" id="bulkPurgeBtn" onclick="bulkPurgeTrash()" disabled>Удалить навсегда (<span id="bulkPurgeCount">0</span>)</button>
+      <button class="toolbar-btn" onclick="emptyTrash()">🗑 Очистить корзину</button>
+    </div>
+    <div class="list-header"><h3>Корзина <span class="list-count" id="trashCount"></span></h3><span class="md-help">Автоочистка через 30 дней</span></div>
+    <div class="admin-list" id="trashList"><div class="empty"><p>Загрузка...</p></div></div>`;
+  await loadTrash();
+}
+async function loadTrash(){
+  const {data,error}=await db.from('news').select('*').not('deleted_at','is',null).order('deleted_at',{ascending:false});
+  if(error){document.getElementById('trashList').innerHTML='<div class="empty"><h3>Ошибка</h3></div>';return;}
+  allTrashCache=data||[];renderTrashList();
+}
+function renderTrashList(){
+  const s=(document.getElementById('trashSearch')?.value||'').toLowerCase().trim();
+  let list=[...allTrashCache];
+  if(s)list=list.filter(n=>(n.title||'').toLowerCase().includes(s));
+  const cntEl=document.getElementById('trashCount');if(cntEl)cntEl.innerHTML=`<strong>${list.length}</strong>`;
+  const listEl=document.getElementById('trashList');if(!listEl)return;
+  if(!list.length){
+    listEl.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--muted-soft)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><h3>Корзина пуста</h3><p>Удалённые новости появятся здесь</p></div>`;
+    updateBulkPurgeUI();return;
+  }
+  listEl.innerHTML=list.map(n=>{
+    const deletedDays=Math.floor((Date.now()-new Date(n.deleted_at).getTime())/86400000);
+    const daysLeft=30-deletedDays;const warning=daysLeft<=5;
+    return `<div class="admin-item">
+      <input type="checkbox" class="admin-item-checkbox" data-trash-id="${n.id}" onchange="toggleTrashSelect(this)" ${selectedTrashIds.has(n.id)?'checked':''}>
+      ${n.cover_image?`<div class="admin-item-img"><img src="${escapeHtml(n.cover_image)}" alt=""></div>`:'<div class="admin-item-img" style="display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:11px;">Нет</div>'}
+      <div class="admin-item-body">
+        <div class="admin-item-badges"><span class="admin-badge cat">${escapeHtml(catName(n.category_slug))}</span><span class="admin-badge trash">Удалено</span>${warning?`<span class="admin-badge urgent">${daysLeft} дн.</span>`:`<span class="admin-badge">${daysLeft} дн.</span>`}</div>
+        <div class="admin-item-title">${escapeHtml(n.title)}</div>
+        <div class="admin-item-meta"><span>Удалено ${fmtDate(n.deleted_at)}</span>${n.author?`<span>· ${escapeHtml(n.author)}</span>`:''}</div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="action-btn restore" onclick="restoreNews(${Number(n.id)})" title="Восстановить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+        <button class="action-btn danger" onclick="purgeNews(${Number(n.id)})" title="Удалить навсегда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="9" y1="4" x2="15" y2="4"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+  updateBulkPurgeUI();
+}
+function toggleTrashSelect(cb){const id=Number(cb.dataset.trashId);if(cb.checked)selectedTrashIds.add(id);else selectedTrashIds.delete(id);updateBulkPurgeUI();}
+function updateBulkPurgeUI(){const b=document.getElementById('bulkPurgeBtn');const c=document.getElementById('bulkPurgeCount');if(!b||!c)return;c.textContent=selectedTrashIds.size;b.disabled=selectedTrashIds.size===0;}
+async function restoreNews(id){const {error}=await db.from('news').update({deleted_at:null}).eq('id',id);if(error){toast('Ошибка','error');return;}toast('Восстановлено');loadTrash();loadStats();}
+async function purgeNews(id){if(!confirm('Удалить навсегда? Это нельзя отменить.'))return;const {error}=await db.from('news').delete().eq('id',id);if(error){toast('Ошибка','error');return;}toast('Удалено навсегда');loadTrash();loadStats();}
+async function bulkPurgeTrash(){
+  if(!selectedTrashIds.size)return;
+  if(!confirm(`Удалить навсегда ${selectedTrashIds.size} новостей? Это нельзя отменить.`))return;
+  const {error}=await db.from('news').delete().in('id',[...selectedTrashIds]);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Удалено навсегда: ${selectedTrashIds.size}`);selectedTrashIds.clear();loadTrash();loadStats();
+}
+async function emptyTrash(){
+  if(!allTrashCache.length){toast('Корзина пуста');return;}
+  if(!confirm(`Удалить навсегда все ${allTrashCache.length} новостей? Это нельзя отменить.`))return;
+  const ids=allTrashCache.map(n=>n.id);
+  const {error}=await db.from('news').delete().in('id',ids);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Корзина очищена: ${ids.length}`);loadTrash();loadStats();
+}
+
+/* ===== АНАЛИТИКА С ГРАФИКОМ ===== */
+async function loadAnalyticsTab(){
+  document.getElementById('adminContent').innerHTML='<div class="empty"><p>Загрузка...</p></div>';
+  const since=new Date(Date.now()-30*864e5).toISOString();
+  const {data}=await db.from('news').select('published_at,status').is('deleted_at',null).gte('published_at',since);
+  const counts={};
+  (data||[]).forEach(n=>{const day=n.published_at?.slice(0,10);if(day)counts[day]=(counts[day]||0)+1;});
+  const days=Object.keys(counts).sort();
+  const max=Math.max(...Object.values(counts),1);
+  const w=600,h=220,barW=w/(days.length||1);
+  let bars='';
+  days.forEach((d,i)=>{
+    const barH=(counts[d]/max)*(h-60);
+    bars+=`<rect x="${i*barW+4}" y="${h-40-barH}" width="${barW-10}" height="${barH}" fill="#ef4444" rx="3"><title>${d}: ${counts[d]}</title></rect>`;
+    bars+=`<text x="${i*barW+barW/2}" y="${h-20}" text-anchor="middle" font-size="10" fill="#64748b">${d.slice(5)}</text>`;
+    bars+=`<text x="${i*barW+barW/2}" y="${h-45-barH}" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">${counts[d]}</text>`;
+  });
+  const total=(data||[]).length;
+  const byCat={};
+  (data||[]).forEach(n=>{byCat[n.status||'published']=(byCat[n.status||'published']||0)+1;});
+  document.getElementById('adminContent').innerHTML=`
+    <div class="form-card">
+      <h3 style="margin-bottom:8px;">Публикации за 30 дней</h3>
+      <p class="md-help" style="margin-bottom:16px;">Всего: <strong>${total}</strong> · Активных дней: <strong>${days.length}</strong></p>
+      <svg viewBox="0 0 ${w} ${h}" class="analytics-chart">${bars||'<text x="300" y="110" text-anchor="middle" fill="#94a3b8">Нет данных</text>'}</svg>
+    </div>
+    <div class="stats-grid" style="margin-top:16px;">
+      <div class="stat-card"><div class="stat-value">${byCat.published||0}</div><div class="stat-label">Опубликовано</div></div>
+      <div class="stat-card"><div class="stat-value">${byCat.draft||0}</div><div class="stat-label">Черновиков</div></div>
+      <div class="stat-card"><div class="stat-value">${byCat.scheduled||0}</div><div class="stat-label">Запланировано</div></div>
+    </div>`;
+}
+
+/* ===== ВИДЕО ===== */
+function loadVideosTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="form-card">
+      <div class="form-card-header"><h3 id="videoFormTitle">${editingVideoId?'✏️ Редактировать видео':'+ Добавить видео'}</h3></div>
+      <form onsubmit="submitVideo(event)" id="videoFormEl">
+        <div class="form-row">
+          <div class="form-group"><label>Тип</label><select id="vType"><option value="live">LIVE</option><option value="report">Репортаж</option><option value="vertical">Вертикаль</option></select></div>
+          <div class="form-group"><label>Длительность</label><input id="vDur" placeholder="12:34 / LIVE"></div>
+        </div>
+        <div class="form-group"><label>YouTube ID</label><input id="vId" placeholder="dQw4w9WgXcQ" required pattern="[A-Za-z0-9_\\-]{11}"></div>
+        <div class="yt-preview" id="ytPreview"><img src="" alt=""></div>
+        <div class="form-group">
+          <label>Своя обложка (необязательно)</label>
+          <div class="image-upload">
+            <label class="upload-btn" for="vCover">Загрузить</label>
+            <input type="file" id="vCover" accept="image/*" onchange="previewVideoCover(this)">
+            <div class="video-cover-preview" id="vCoverPreview">Нет</div>
+            <button type="button" class="toolbar-btn" onclick="clearVideoCover()" id="vCoverClearBtn" style="display:none;">✕ Убрать</button>
+          </div>
+          <p class="md-help">Если не загрузить — возьмётся превью с YouTube</p>
+        </div>
+        <div class="form-group"><label>Заголовок</label><input id="vTitle" required></div>
+        <div class="form-group"><label>Описание</label><input id="vShort"></div>
+        <div class="checkbox-row"><label class="checkbox-label"><input type="checkbox" id="vLive"> Прямой эфир</label><label class="checkbox-label"><input type="checkbox" id="vDraft"> Черновик</label></div>
+        <div class="form-actions">
+          <button type="submit" class="submit-btn primary" style="max-width:200px;">${editingVideoId?'Сохранить':'Добавить'}</button>
+          ${editingVideoId?`<button type="button" class="submit-btn secondary" style="max-width:200px;" onclick="cancelVideoEdit()">Отмена</button>`:''}
+        </div>
+      </form>
+    </div>
+    <div class="list-header"><h3>Все видео <span class="list-count" id="videosCount"></span></h3><span class="md-help">Тащи за ⠿ для изменения порядка</span></div>
+    <div class="admin-list" id="adminList"><div class="empty"><p>Загрузка...</p></div></div>`;
+  loadVideos();
+  const vId=document.getElementById('vId');
+  vId.addEventListener('input',()=>{const preview=document.getElementById('ytPreview');const val=vId.value.trim();if(/^[A-Za-z0-9_\-]{11}$/.test(val)){preview.innerHTML=`<img src="https://img.youtube.com/vi/${val}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${val}/hqdefault.jpg'">`;preview.style.display='block';}else{preview.style.display='none';}});
+}
+async function loadVideos(){
+  const {data,error}=await db.from('videos').select('*').order('sort_order',{ascending:true}).order('id',{ascending:true});
+  if(error)return;
+  allVideosCache=data||[];
+  renderVideoList();
+}
+function renderVideoList(){
+  const el=document.getElementById('adminList');const cnt=document.getElementById('videosCount');if(!el)return;
+  if(cnt)cnt.innerHTML=`<strong>${allVideosCache.length}</strong>`;
+  if(!allVideosCache.length){el.innerHTML='<div class="empty"><h3>Нет видео</h3></div>';return;}
+  const typeLabels={live:'LIVE',report:'Репортаж',vertical:'Вертикаль'};
+  el.innerHTML=allVideosCache.map(v=>{
+    const cover=v.cover_image||`https://img.youtube.com/vi/${v.video_id}/maxresdefault.jpg`;
+    return `<div class="admin-item" draggable="true" data-video-id="${v.id}" style="cursor:grab;">
+      <div class="drag-handle" style="display:flex;align-items:center;color:var(--muted-soft);padding:8px;cursor:grab;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      </div>
+      <div class="admin-item-img"><img src="${escapeHtml(cover)}" onerror="this.src='https://img.youtube.com/vi/${v.video_id}/hqdefault.jpg'" alt=""></div>
+      <div class="admin-item-body">
+        <div class="admin-item-badges"><span class="admin-badge cat">${typeLabels[v.type]||v.type}</span>${v.is_live?'<span class="admin-badge urgent">LIVE</span>':''}${v.status==='draft'?'<span class="admin-badge draft">Черновик</span>':''}${v.cover_image?'<span class="admin-badge new">Своя обложка</span>':''}</div>
+        <div class="admin-item-title">${escapeHtml(v.title)}</div>
+        <div class="admin-item-meta"><span>${escapeHtml(v.duration||'—')}</span><span>· порядок: ${v.sort_order||0}</span></div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="action-btn edit" onclick="editVideo(${Number(v.id)})" title="Ред."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn danger" onclick="deleteVideo(${Number(v.id)})" title="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+  let dragSrcId=null;
+  el.querySelectorAll('[data-video-id]').forEach(row=>{
+    row.addEventListener('dragstart',e=>{dragSrcId=Number(row.dataset.videoId);row.style.opacity='0.4';e.dataTransfer.effectAllowed='move';});
+    row.addEventListener('dragend',()=>{row.style.opacity='';el.querySelectorAll('[data-video-id]').forEach(r=>r.style.borderTop='');});
+    row.addEventListener('dragover',e=>{e.preventDefault();if(Number(row.dataset.videoId)===dragSrcId)return;row.style.borderTop='3px solid var(--accent)';});
+    row.addEventListener('dragleave',()=>{row.style.borderTop='';});
+    row.addEventListener('drop',async e=>{
+      e.preventDefault();row.style.borderTop='';
+      const targetId=Number(row.dataset.videoId);if(dragSrcId===targetId)return;
+      const srcIdx=allVideosCache.findIndex(v=>v.id===dragSrcId);
+      const tgtIdx=allVideosCache.findIndex(v=>v.id===targetId);
+      if(srcIdx<0||tgtIdx<0)return;
+      const [moved]=allVideosCache.splice(srcIdx,1);allVideosCache.splice(tgtIdx,0,moved);
+      for(let i=0;i<allVideosCache.length;i++){allVideosCache[i].sort_order=i+1;}
+      try{await Promise.all(allVideosCache.map(v=>db.from('videos').update({sort_order:v.sort_order}).eq('id',v.id)));toast('Порядок сохранён');}
+      catch(err){toast('Ошибка сохранения порядка','error');}
+      renderVideoList();
+    });
+  });
+}
+async function editVideo(id){
+  const {data}=await db.from('videos').select('*').eq('id',id).single();
+  if(!data){toast('Ошибка','error');return;}
+  editingVideoId=id;adminTab('videos');
+  setTimeout(()=>{
+    document.getElementById('videoFormTitle').textContent='✏️ Редактировать видео';
+    document.getElementById('vType').value=data.type||'live';
+    document.getElementById('vDur').value=data.duration||'';
+    document.getElementById('vId').value=data.video_id||'';
+    document.getElementById('vTitle').value=data.title||'';
+    document.getElementById('vShort').value=data.short||'';
+    document.getElementById('vLive').checked=!!data.is_live;
+    document.getElementById('vDraft').checked=data.status==='draft';
+    document.getElementById('vId').dispatchEvent(new Event('input'));
+    if(data.cover_image)setVideoCoverPreview(data.cover_image);else clearVideoCover();
+    toast('Режим редактирования');
+  },200);
+}
+function cancelVideoEdit(){editingVideoId=null;clearVideoCover();adminTab('videos');}
+function previewVideoCover(input){const file=input.files[0];if(!file){clearVideoCover();return;}const url=URL.createObjectURL(file);pendingVideoCoverBlob=file;pendingVideoCoverUrl=url;const box=document.getElementById('vCoverPreview');box.innerHTML=`<img src="${url}" alt="">`;document.getElementById('vCoverClearBtn').style.display='inline-flex';}
+function clearVideoCover(){pendingVideoCoverBlob=null;if(pendingVideoCoverUrl){URL.revokeObjectURL(pendingVideoCoverUrl);pendingVideoCoverUrl=null;}const box=document.getElementById('vCoverPreview');if(box)box.innerHTML='Нет';const inp=document.getElementById('vCover');if(inp)inp.value='';const btn=document.getElementById('vCoverClearBtn');if(btn)btn.style.display='none';}
+function setVideoCoverPreview(url){const box=document.getElementById('vCoverPreview');if(!box)return;if(url){box.innerHTML=`<img src="${escapeHtml(url)}" alt="">`;document.getElementById('vCoverClearBtn').style.display='inline-flex';}else{box.innerHTML='Нет';document.getElementById('vCoverClearBtn').style.display='none';}pendingVideoCoverUrl=url||null;pendingVideoCoverBlob=null;}
+async function submitVideo(e){
+  e.preventDefault();const btn=e.target.querySelector('button[type=submit]');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Сохранение...';
+  try{
+    const videoId=document.getElementById('vId').value.trim();
+    if(!isValidYT(videoId))throw new Error('YouTube ID должен быть 11 символов');
+    let coverUrl=pendingVideoCoverUrl||null;
+    if(pendingVideoCoverBlob){coverUrl=await uploadImage(pendingVideoCoverBlob);}
+    const payload={type:document.getElementById('vType').value,video_id:videoId,title:document.getElementById('vTitle').value,short:document.getElementById('vShort').value,duration:document.getElementById('vDur').value,is_live:document.getElementById('vLive').checked,status:document.getElementById('vDraft').checked?'draft':'published',cover_image:coverUrl};
+    if(editingVideoId){
+      const {error}=await db.from('videos').update(payload).eq('id',editingVideoId);
+      if(error)throw error;toast('Обновлено');editingVideoId=null;
+    }else{
+      const {data:maxRow}=await db.from('videos').select('sort_order').order('sort_order',{ascending:false}).limit(1).maybeSingle();
+      payload.sort_order=(maxRow?.sort_order||0)+1;
+      const {error}=await db.from('videos').insert(payload);
+      if(error)throw error;toast('Видео добавлено');
+    }
+    clearVideoCover();loadVideos();loadStats();adminTab('videos');
+  }catch(err){toast('Ошибка: '+(err.message||''),'error');}
+  finally{btn.disabled=false;btn.innerHTML='Сохранить';}
+}
+async function deleteVideo(id){if(!confirm('Удалить видео?'))return;const {error}=await db.from('videos').delete().eq('id',id);if(error){toast('Ошибка','error');return;}toast('Удалено');loadVideos();loadStats();}
+
+/* ===== МЕДИА ===== */
+async function loadMediaTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="toolbar">
+      <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="mediaSearch" placeholder="Поиск по имени..." oninput="renderMediaGrid()"></div>
+      <button class="toolbar-btn danger" id="bulkMediaDeleteBtn" onclick="bulkDeleteMedia()" disabled>Удалить (<span id="bulkMediaCount">0</span>)</button>
+      <button class="toolbar-btn" onclick="selectedMediaIds.clear();renderMediaGrid()">Снять выбор</button>
+    </div>
+    <div class="media-dropzone" id="mediaDropzone" onclick="document.getElementById('mediaUpload').click()">
+      <div class="media-dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <h3>Перетащите файлы сюда</h3><p>или нажмите — JPG, PNG, WEBP, GIF</p>
+      <input type="file" id="mediaUpload" accept="image/*" multiple onchange="handleMediaUpload(this.files)">
+    </div>
+    <div class="media-folders" id="mediaFolders"></div>
+    <div class="media-grid" id="mediaGrid"><div class="empty" style="grid-column:1/-1;"><p>Загрузка...</p></div></div>`;
+  const dz=document.getElementById('mediaDropzone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)handleMediaUpload(e.dataTransfer.files);});
+  await loadMediaUsage();await loadMedia();
+}
+async function loadMediaUsage(){
+  try{const {data:news}=await db.from('news').select('id, title, cover_image, author_avatar');mediaUsageCache={};(news||[]).forEach(n=>{if(n.cover_image){if(!mediaUsageCache[n.cover_image])mediaUsageCache[n.cover_image]=[];mediaUsageCache[n.cover_image].push({id:n.id,title:n.title,type:'обложка'});}if(n.author_avatar){if(!mediaUsageCache[n.author_avatar])mediaUsageCache[n.author_avatar]=[];mediaUsageCache[n.author_avatar].push({id:n.id,title:n.title,type:'аватар'});}});}catch(e){}
+}
+async function loadMedia(){
+  try{const {data,error}=await db.storage.from('news-images').list('',{limit:1000,sortBy:{column:'created_at',order:'desc'}});if(error)throw error;
+    const folderMap={};allMediaCache=(data||[]).filter(f=>f.name&&!f.name.endsWith('/')).map(f=>{const d=f.created_at?new Date(f.created_at):new Date();const folder=d.toISOString().slice(0,7);if(!folderMap[folder])folderMap[folder]=0;folderMap[folder]++;const {data:u}=db.storage.from('news-images').getPublicUrl(f.name);return {name:f.name,url:u.publicUrl,size:f.metadata?.size||0,created_at:f.created_at,folder,usage:mediaUsageCache[u.publicUrl]||[]};});
+    renderMediaFolders(folderMap);renderMediaGrid();
+  }catch(err){document.getElementById('mediaGrid').innerHTML='<div class="empty" style="grid-column:1/-1;"><h3>Ошибка</h3></div>';}
+}
+function renderMediaFolders(folderMap){const el=document.getElementById('mediaFolders');if(!el)return;const folders=Object.keys(folderMap).sort().reverse();let html=`<button class="media-folder ${currentMediaFolder==='all'?'active':''}" onclick="selectMediaFolder('all')">Все <span class="media-folder-count">${allMediaCache.length}</span></button>`;folders.forEach(f=>{html+=`<button class="media-folder ${currentMediaFolder===f?'active':''}" onclick="selectMediaFolder('${f}')">${f} <span class="media-folder-count">${folderMap[f]}</span></button>`;});el.innerHTML=html;}
+function selectMediaFolder(f){currentMediaFolder=f;renderMediaFolders(Object.fromEntries(Object.entries(allMediaCache.reduce((a,m)=>{a[m.folder]=(a[m.folder]||0)+1;return a;},{}))));renderMediaGrid();}
+function renderMediaGrid(){
+  const grid=document.getElementById('mediaGrid');if(!grid)return;
+  const q=(document.getElementById('mediaSearch')?.value||'').toLowerCase().trim();
+  let list=[...allMediaCache];
+  if(currentMediaFolder!=='all')list=list.filter(m=>m.folder===currentMediaFolder);
+  if(q)list=list.filter(m=>m.name.toLowerCase().includes(q));
+  if(!list.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><h3>Нет фото</h3></div>';updateMediaBulkUI();return;}
+  grid.innerHTML=list.map(m=>{
+    const used=m.usage&&m.usage.length>0;const sizeKb=Math.round((m.size||0)/1024);
+    const sel=selectedMediaIds.has(m.name);
+    return `<div class="media-item ${sel?'selected':''}"><div class="media-item-img" onclick="copyMediaUrl('${escapeHtml(m.url)}')"><img src="${escapeHtml(m.url)}" alt="" loading="lazy">${used?`<span class="media-item-usage">Используется ${m.usage.length}</span>`:'<span class="media-item-unused">Свободно</span>'}<input type="checkbox" class="media-item-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleMediaSelect('${escapeHtml(m.name)}',this.checked)"><div class="media-item-overlay"><button class="media-action-btn danger" onclick="event.stopPropagation(); deleteMedia('${escapeHtml(m.name)}', ${used})" title="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button></div></div><div class="media-item-info"><div class="media-item-name">${escapeHtml(m.name)}</div><div class="media-item-meta">${sizeKb} КБ</div></div></div>`;
+  }).join('');
+  updateMediaBulkUI();
+}
+function toggleMediaSelect(name,checked){if(checked)selectedMediaIds.add(name);else selectedMediaIds.delete(name);updateMediaBulkUI();renderMediaGrid();}
+function updateMediaBulkUI(){const b=document.getElementById('bulkMediaDeleteBtn');const c=document.getElementById('bulkMediaCount');if(!b||!c)return;c.textContent=selectedMediaIds.size;b.disabled=selectedMediaIds.size===0;}
+async function bulkDeleteMedia(){
+  if(!selectedMediaIds.size)return;
+  if(!confirm(`Удалить ${selectedMediaIds.size} фото?`))return;
+  const {error}=await db.storage.from('news-images').remove([...selectedMediaIds]);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Удалено: ${selectedMediaIds.size}`);selectedMediaIds.clear();await loadMedia();
+}
+async function handleMediaUpload(files){
+  if(!files||!files.length)return;let done=0;
+  for(const file of files){
+    try{
+      const ext=file.name.split('.').pop().toLowerCase();
+      if(!['jpg','jpeg','png','webp','gif','svg'].includes(ext)){toast('Пропущен: '+file.name,'error');continue;}
+      const compressed=await compressImage(file);
+      const name=`${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const {error}=await db.storage.from('news-images').upload(name,compressed);
+      if(error){toast('Ошибка: '+file.name,'error');continue;}
+      done++;
+    }catch(e){}
+  }
+  if(done)toast(`Загружено: ${done}/${files.length}`);
+  await loadMedia();
+}
+function compressImage(file,maxWidth=1920,maxSizeKB=300){
+  return new Promise((resolve)=>{
+    if(file.type==='image/svg+xml'||file.type==='image/gif'){resolve(file);return;}
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      const img=new Image();
+      img.onload=()=>{
+        let {width,height}=img;
+        if(width>maxWidth){height=Math.round(height*maxWidth/width);width=maxWidth;}
+        const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,width,height);
+        let quality=0.85;
+        const tryCompress=()=>{canvas.toBlob((blob)=>{if(!blob){resolve(file);return;}if(blob.size/1024>maxSizeKB&&quality>0.4){quality-=0.1;tryCompress();}else{const ext=file.name.split('.').pop().toLowerCase();resolve(new File([blob],file.name,{type:blob.type||`image/${ext}`}));}},'image/jpeg',quality);};
+        tryCompress();
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function copyMediaUrl(url){try{await navigator.clipboard.writeText(url);toast('URL скопирован');}catch(e){prompt('URL:',url);}}
+async function deleteMedia(name,used){if(used&&!confirm('Фото используется. Удалить всё равно?'))return;if(!used&&!confirm('Удалить фото?'))return;const {error}=await db.storage.from('news-images').remove([name]);if(error){toast('Ошибка','error');return;}toast('Удалено');await loadMedia();}
+
+/* ===== CROPPER ===== */
+function previewImage(input,previewId){
+  const file=input.files[0];
+  if(!file){const box=document.getElementById(previewId);box.innerHTML='Нет фото';delete box.dataset.url;return;}
+  openCropper(file,(blob)=>{if(!blob){input.value='';return;}const url=URL.createObjectURL(blob);const box=document.getElementById(previewId);box.innerHTML=`<img src="${url}" alt="">`;box._pendingBlob=blob;if(previewId==='nCoverPreview')updateCardPreview();});
+}
+function openCropper(file,cb){
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    document.getElementById('cropperImage').src=e.target.result;
+    document.getElementById('cropperModal').classList.add('open');
+    cropperResolve=cb;
+    if(cropperInstance){cropperInstance.destroy();cropperInstance=null;}
+    setTimeout(()=>{cropperInstance=new Cropper(document.getElementById('cropperImage'),{aspectRatio:16/9,viewMode:1,autoCropArea:1,background:false});},100);
+  };
+  reader.readAsDataURL(file);
+  document.querySelectorAll('.crop-ratio-btn').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('.crop-ratio-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(cropperInstance){const ratio=btn.dataset.ratio==='NaN'?NaN:eval(btn.dataset.ratio);cropperInstance.setAspectRatio(ratio);}};});
+}
+function confirmCrop(){
+  if(!cropperInstance){closeCropper();return;}
+  cropperInstance.getCroppedCanvas({maxWidth:1920,maxHeight:1920,imageSmoothingQuality:'high'}).toBlob((blob)=>{if(cropperResolve)cropperResolve(blob);closeCropper();},'image/jpeg',0.9);
+}
+function closeCropper(){document.getElementById('cropperModal').classList.remove('open');if(cropperInstance){cropperInstance.destroy();cropperInstance=null;}cropperResolve=null;}
+async function uploadImage(file){
+  const compressed=await compressImage(file);
+  const ext=file.name.split('.').pop().toLowerCase();
+  const name=`${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const {error}=await db.storage.from('news-images').upload(name,compressed);
+  if(error)throw error;
+  const {data}=db.storage.from('news-images').getPublicUrl(name);
+  return data.publicUrl;
+}
+
+/* ===== КАЛЕНДАРЬ С DRAG-AND-DROP ===== */
+function loadCalendarTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="calendar-header"><div class="calendar-title" id="calendarTitle"></div><div class="calendar-nav"><button onclick="changeCalendarMonth(-1)">←</button><button onclick="changeCalendarMonth(0)">Сегодня</button><button onclick="changeCalendarMonth(1)">→</button></div></div>
+    <div class="calendar-grid" id="calendarGrid"></div>`;
+  renderCalendar();
+}
+function changeCalendarMonth(delta){if(delta===0)calendarDate=new Date();else calendarDate.setMonth(calendarDate.getMonth()+delta);renderCalendar();}
+async function renderCalendar(){
+  const y=calendarDate.getFullYear(),m=calendarDate.getMonth();
+  const firstDay=new Date(y,m,1);const lastDay=new Date(y,m+1,0);const startDay=(firstDay.getDay()+6)%7;const totalDays=lastDay.getDate();
+  const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('calendarTitle').textContent=`${monthNames[m]} ${y}`;
+  const startISO=new Date(y,m,1).toISOString();const endISO=new Date(y,m+1,1).toISOString();
+  let news=[];
+  try{const {data}=await db.from('news').select('id,title,status,published_at,scheduled_at').is('deleted_at',null).gte('published_at',startISO).lt('published_at',endISO);news=data||[];const {data:sched}=await db.from('news').select('id,title,status,published_at,scheduled_at').is('deleted_at',null).eq('status','scheduled').gte('scheduled_at',startISO).lt('scheduled_at',endISO);if(sched)news=news.concat(sched.filter(s=>!news.find(n=>n.id===s.id)));}catch(e){}
+  const grid=document.getElementById('calendarGrid');const dayNames=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  let html=dayNames.map(d=>`<div class="calendar-day-header">${d}</div>`).join('');
+  for(let i=0;i<startDay;i++)html+='<div class="calendar-day other-month"></div>';
+  const today=new Date();const isCurrentMonth=today.getFullYear()===y&&today.getMonth()===m;
+  for(let d=1;d<=totalDays;d++){
+    const isToday=isCurrentMonth&&today.getDate()===d;
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayNews=news.filter(n=>{const date=n.status==='scheduled'&&n.scheduled_at?n.scheduled_at:n.published_at;return date&&date.startsWith(dateStr);});
+    html+=`<div class="calendar-day ${isToday?'today':''}" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="dropOnDay(event,'${dateStr}',this)">
+      <div class="calendar-day-num">${d}</div>
+      ${dayNews.slice(0,3).map(n=>`<div class="calendar-event ${n.status==='scheduled'?'scheduled':n.status==='draft'?'draft':'published'}" draggable="true" data-id="${n.id}" ondragstart="dragStartEvent(event)" onclick="event.stopPropagation();editNews(${n.id})" title="${escapeHtml(n.title)}">${escapeHtml(n.title.slice(0,20))}${n.title.length>20?'…':''}</div>`).join('')}
+      ${dayNews.length>3?`<div style="font-size:10px;color:var(--muted);padding:2px 6px;font-weight:600;">+${dayNews.length-3}</div>`:''}
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+function dragStartEvent(e){draggedNewsId=e.target.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedNewsId);}
+async function dropOnDay(e,dateStr,el){
+  e.preventDefault();el.classList.remove('dragover');
+  const id=draggedNewsId||e.dataTransfer.getData('text/plain');
+  if(!id)return;
+  const newDate=new Date(dateStr+'T12:00:00').toISOString();
+  const {error}=await db.from('news').update({published_at:newDate}).eq('id',id);
+  if(error){toast('Ошибка','error');return;}
+  toast('Дата изменена');draggedNewsId=null;renderCalendar();
+}
+
+/* ===== Cmd+K ПОИСК ===== */
+function openQuickSearch(){
+  const html=`<input id="qsInput" placeholder="Поиск новостей..." style="width:100%;padding:16px;border:1.5px solid var(--line);border-radius:var(--radius-sm);font-size:16px;font-family:inherit;outline:none;margin-bottom:16px;"><div id="qsResults" style="max-height:400px;overflow-y:auto;"></div>`;
+  document.getElementById('previewContent').innerHTML=html;
+  document.getElementById('previewModal').classList.add('open');
+  const inp=document.getElementById('qsInput');inp.focus();
+  inp.addEventListener('input',()=>{
+    const q=inp.value.toLowerCase().trim();const res=document.getElementById('qsResults');
+    if(!q){res.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px;">Начните вводить...</p>';return;}
+    const hits=allNewsCache.filter(n=>(n.title||'').toLowerCase().includes(q)).slice(0,10);
+    if(!hits.length){res.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px;">Ничего не найдено</p>';return;}
+    res.innerHTML=hits.map(n=>`<div onclick="closePreview();editNews(${n.id})" style="padding:12px;border-radius:8px;cursor:pointer;border-bottom:1px solid var(--line);" onmouseover="this.style.background='var(--soft)'" onmouseout="this.style.background=''"><div style="font-weight:700;">${escapeHtml(n.title)}</div><div style="font-size:12px;color:var(--muted);">${catName(n.category_slug)} · ${fmtDate(n.published_at)}</div></div>`).join('');
+  });
+}
+function showShortcutsHelp(){
+  const html=`<h2 style="margin-bottom:20px;">Горячие клавиши</h2><div style="display:grid;grid-template-columns:auto 1fr;gap:12px 20px;font-size:14px;align-items:center;"><kbd>Ctrl</kbd><span>+ <kbd>S</kbd> — сохранить</span><kbd>Ctrl</kbd><span>+ <kbd>Enter</kbd> — опубликовать</span><kbd>Ctrl</kbd><span>+ <kbd>K</kbd> — быстрый поиск</span><kbd>N</kbd><span>— новая новость</span><kbd>L</kbd><span>— список новостей</span><kbd>M</kbd><span>— медиа</span><kbd>V</kbd><span>— видео</span><kbd>C</kbd><span>— календарь</span><kbd>T</kbd><span>— корзина</span><kbd>A</kbd><span>— аналитика</span><kbd>Esc</kbd><span>— закрыть</span><kbd>?</kbd><span>— эта справка</span></div>`;
+  document.getElementById('previewContent').innerHTML=html;
+  document.getElementById('previewModal').classList.add('open');
+}
+document.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  const inField=['input','textarea','select'].includes(tag)||e.target.isContentEditable;
+  if(e.key==='Escape'){if(document.getElementById('previewModal').classList.contains('open'))return closePreview();if(document.getElementById('idleModal').classList.contains('open'))return stayActive();if(document.getElementById('cropperModal').classList.contains('open'))return closeCropper();if(document.getElementById('twofaModal').classList.contains('open'))return close2FA();return;}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='s'||e.key==='Enter')){e.preventDefault();const form=document.getElementById(currentTab==='news'?'newsFormEl':currentTab==='videos'?'videoFormEl':null);if(form)form.requestSubmit();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openQuickSearch();return;}
+  if(inField||e.ctrlKey||e.metaKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==='n'){e.preventDefault();adminTab('news');}
+  else if(k==='l'){e.preventDefault();adminTab('published');}
+  else if(k==='m'){e.preventDefault();adminTab('media');}
+  else if(k==='v'){e.preventDefault();adminTab('videos');}
+  else if(k==='c'){e.preventDefault();adminTab('calendar');}
+  else if(k==='t'){e.preventDefault();adminTab('trash');}
+  else if(k==='a'){e.preventDefault();adminTab('analytics');}
+  else if(k==='?'||(e.shiftKey&&k==='/')){e.preventDefault();showShortcutsHelp();}
+});
+
+/* ===== СТАРТ ===== */
+(async()=>{
+  const {data:{session}}=await db.auth.getSession();
+  if(session){
+    currentUserId=session.user.id;
+    const {data}=await db.from('admins').select('uid').eq('user_id',session.user.id).maybeSingle();
+    if(data){showAdminUI();return;}
+    await db.auth.signOut();
+  }
+  showLogin();
+})();
+db.auth.onAuthStateChange((event,session)=>{
+  setTimeout(async()=>{
+    if(event==='SIGNED_OUT')return showLogin();
+    if(session&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
+      currentUserId=session.user.id;
+      const {data}=await db.from('admins').select('uid').eq('user_id',session.user.id).maybeSingle();
+      if(data&&!need2FAAfterLogin)showAdminUI();
+    }
+  },0);
+});
+</script>
+</body>
+</html>
