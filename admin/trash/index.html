@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Корзина — Админ-панель</title>
+<link rel="icon" href="../../file/main.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="admin-wrap active">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><img src="../../file/main.png" alt="Метро New"><div class="sidebar-brand-text">Метро New<em>Админ-панель</em></div></div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="../news/">Создать</a>
+      <a class="sidebar-item" href="../published/">Опубликованные</a>
+      <a class="sidebar-item" href="../calendar/">Календарь</a>
+      <a class="sidebar-item" href="../media/">Медиа</a>
+      <a class="sidebar-item" href="../videos/">Видео</a>
+      <a class="sidebar-item" href="../analytics/">Аналитика</a>
+      <a class="sidebar-item active" href="../trash/">Корзина</a>
+      <button class="sidebar-item" onclick="open2FASettings()">2FA</button>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="sidebar-item" href="../../">На сайт</a>
+      <button class="sidebar-item sidebar-logout" onclick="logout()">Выйти</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar"><h1>Корзина</h1></div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="adminContent"></div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-overlay" id="twofaModal">
+  <div class="modal-preview" style="max-width:480px;">
+    <button class="modal-preview-close" onclick="document.getElementById('twofaModal').classList.remove('open')">✕</button>
+    <div class="preview-content" id="twofaContent"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="../auth.js"></script>
+<script>
+const CATEGORY_NAMES={world:'Мир',tech:'Технологии',culture:'Культура',sport:'Спорт',weather:'Погода',other:'Другое'};
+const catName=s=>CATEGORY_NAMES[s]||'Другое';
+let allTrashCache=[],selectedTrashIds=new Set();
+const fmtDate=d=>new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+(async()=>{
+  const session=await requireAuth();
+  if(!session)return;
+  loadTrashTab();
+})();
+
+async function loadTrashTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="toolbar">
+      <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="trashSearch" placeholder="Поиск в корзине..." oninput="renderTrashList()"></div>
+      <button class="toolbar-btn danger" id="bulkPurgeBtn" onclick="bulkPurgeTrash()" disabled>Удалить навсегда (<span id="bulkPurgeCount">0</span>)</button>
+      <button class="toolbar-btn" onclick="emptyTrash()">🗑 Очистить корзину</button>
+    </div>
+    <div class="list-header"><h3>Корзина <span class="list-count" id="trashCount"></span></h3><span class="md-help">Автоочистка через 30 дней</span></div>
+    <div class="admin-list" id="trashList"><div class="empty"><p>Загрузка...</p></div></div>`;
+  await loadTrash();
+}
+
+async function loadTrash(){
+  const {data,error}=await db.from('news').select('*').not('deleted_at','is',null).order('deleted_at',{ascending:false});
+  if(error){document.getElementById('trashList').innerHTML='<div class="empty"><h3>Ошибка</h3></div>';return;}
+  allTrashCache=data||[];renderTrashList();
+}
+
+function renderTrashList(){
+  const s=(document.getElementById('trashSearch')?.value||'').toLowerCase().trim();
+  let list=[...allTrashCache];
+  if(s)list=list.filter(n=>(n.title||'').toLowerCase().includes(s));
+  const cntEl=document.getElementById('trashCount');if(cntEl)cntEl.innerHTML=`<strong>${list.length}</strong>`;
+  const listEl=document.getElementById('trashList');if(!listEl)return;
+  if(!list.length){
+    listEl.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--muted-soft)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><h3>Корзина пуста</h3><p>Удалённые новости появятся здесь</p></div>`;
+    updateBulkPurgeUI();return;
+  }
+  listEl.innerHTML=list.map(n=>{
+    const deletedDays=Math.floor((Date.now()-new Date(n.deleted_at).getTime())/86400000);
+    const daysLeft=30-deletedDays;const warning=daysLeft<=5;
+    return `<div class="admin-item">
+      <input type="checkbox" class="admin-item-checkbox" data-trash-id="${n.id}" onchange="toggleTrashSelect(this)" ${selectedTrashIds.has(n.id)?'checked':''}>
+      ${n.cover_image?`<div class="admin-item-img"><img src="${escapeHtml(n.cover_image)}" alt=""></div>`:'<div class="admin-item-img" style="display:flex;align-items:center;justify-content:center;color:var(--muted-soft);font-size:11px;">Нет</div>'}
+      <div class="admin-item-body">
+        <div class="admin-item-badges"><span class="admin-badge cat">${escapeHtml(catName(n.category_slug))}</span><span class="admin-badge trash">Удалено</span>${warning?`<span class="admin-badge urgent">${daysLeft} дн.</span>`:`<span class="admin-badge">${daysLeft} дн.</span>`}</div>
+        <div class="admin-item-title">${escapeHtml(n.title)}</div>
+        <div class="admin-item-meta"><span>Удалено ${fmtDate(n.deleted_at)}</span>${n.author?`<span>· ${escapeHtml(n.author)}</span>`:''}</div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="action-btn restore" onclick="restoreNews(${Number(n.id)})" title="Восстановить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+        <button class="action-btn danger" onclick="purgeNews(${Number(n.id)})" title="Удалить навсегда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="9" y1="4" x2="15" y2="4"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+  updateBulkPurgeUI();
+}
+
+function toggleTrashSelect(cb){const id=Number(cb.dataset.trashId);if(cb.checked)selectedTrashIds.add(id);else selectedTrashIds.delete(id);updateBulkPurgeUI();}
+function updateBulkPurgeUI(){const b=document.getElementById('bulkPurgeBtn');const c=document.getElementById('bulkPurgeCount');if(!b||!c)return;c.textContent=selectedTrashIds.size;b.disabled=selectedTrashIds.size===0;}
+async function restoreNews(id){const {error}=await db.from('news').update({deleted_at:null}).eq('id',id);if(error){toast('Ошибка','error');return;}toast('Восстановлено');loadTrash();}
+async function purgeNews(id){if(!confirm('Удалить навсегда? Это нельзя отменить.'))return;const {error}=await db.from('news').delete().eq('id',id);if(error){toast('Ошибка','error');return;}toast('Удалено навсегда');loadTrash();}
+async function bulkPurgeTrash(){
+  if(!selectedTrashIds.size)return;
+  if(!confirm(`Удалить навсегда ${selectedTrashIds.size} новостей? Это нельзя отменить.`))return;
+  const {error}=await db.from('news').delete().in('id',[...selectedTrashIds]);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Удалено навсегда: ${selectedTrashIds.size}`);selectedTrashIds.clear();loadTrash();
+}
+async function emptyTrash(){
+  if(!allTrashCache.length){toast('Корзина пуста');return;}
+  if(!confirm(`Удалить навсегда все ${allTrashCache.length} новостей? Это нельзя отменить.`))return;
+  const ids=allTrashCache.map(n=>n.id);
+  const {error}=await db.from('news').delete().in('id',ids);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Корзина очищена: ${ids.length}`);loadTrash();
+}
+</script>
+</body>
+</html>
