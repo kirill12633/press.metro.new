@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Календарь — Админ-панель</title>
+<link rel="icon" href="../../file/main.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="admin-wrap active">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><img src="../../file/main.png" alt="Метро New"><div class="sidebar-brand-text">Метро New<em>Админ-панель</em></div></div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="../news/">Создать</a>
+      <a class="sidebar-item" href="../published/">Опубликованные</a>
+      <a class="sidebar-item active" href="../calendar/">Календарь</a>
+      <a class="sidebar-item" href="../media/">Медиа</a>
+      <a class="sidebar-item" href="../videos/">Видео</a>
+      <a class="sidebar-item" href="../analytics/">Аналитика</a>
+      <a class="sidebar-item" href="../trash/">Корзина</a>
+      <button class="sidebar-item" onclick="open2FASettings()">2FA</button>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="sidebar-item" href="../../">На сайт</a>
+      <button class="sidebar-item sidebar-logout" onclick="logout()">Выйти</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar"><h1>Календарь</h1></div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="adminContent"></div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-overlay" id="twofaModal">
+  <div class="modal-preview" style="max-width:480px;">
+    <button class="modal-preview-close" onclick="document.getElementById('twofaModal').classList.remove('open')">✕</button>
+    <div class="preview-content" id="twofaContent"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="../auth.js"></script>
+<script>
+let calendarDate=new Date();
+let draggedNewsId=null;
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+(async()=>{
+  const session=await requireAuth();
+  if(!session)return;
+  loadCalendarTab();
+})();
+
+function loadCalendarTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="calendar-header"><div class="calendar-title" id="calendarTitle"></div><div class="calendar-nav"><button onclick="changeCalendarMonth(-1)">←</button><button onclick="changeCalendarMonth(0)">Сегодня</button><button onclick="changeCalendarMonth(1)">→</button></div></div>
+    <div class="calendar-grid" id="calendarGrid"></div>`;
+  renderCalendar();
+}
+function changeCalendarMonth(delta){if(delta===0)calendarDate=new Date();else calendarDate.setMonth(calendarDate.getMonth()+delta);renderCalendar();}
+
+async function renderCalendar(){
+  const y=calendarDate.getFullYear(),m=calendarDate.getMonth();
+  const firstDay=new Date(y,m,1);const lastDay=new Date(y,m+1,0);const startDay=(firstDay.getDay()+6)%7;const totalDays=lastDay.getDate();
+  const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('calendarTitle').textContent=`${monthNames[m]} ${y}`;
+  const startISO=new Date(y,m,1).toISOString();const endISO=new Date(y,m+1,1).toISOString();
+  let news=[];
+  try{
+    const {data}=await db.from('news').select('id,title,status,published_at,scheduled_at').is('deleted_at',null).gte('published_at',startISO).lt('published_at',endISO);
+    news=data||[];
+    const {data:sched}=await db.from('news').select('id,title,status,published_at,scheduled_at').is('deleted_at',null).eq('status','scheduled').gte('scheduled_at',startISO).lt('scheduled_at',endISO);
+    if(sched)news=news.concat(sched.filter(s=>!news.find(n=>n.id===s.id)));
+  }catch(e){}
+  const grid=document.getElementById('calendarGrid');const dayNames=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  let html=dayNames.map(d=>`<div class="calendar-day-header">${d}</div>`).join('');
+  for(let i=0;i<startDay;i++)html+='<div class="calendar-day other-month"></div>';
+  const today=new Date();const isCurrentMonth=today.getFullYear()===y&&today.getMonth()===m;
+  for(let d=1;d<=totalDays;d++){
+    const isToday=isCurrentMonth&&today.getDate()===d;
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayNews=news.filter(n=>{const date=n.status==='scheduled'&&n.scheduled_at?n.scheduled_at:n.published_at;return date&&date.startsWith(dateStr);});
+    html+=`<div class="calendar-day ${isToday?'today':''}" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="dropOnDay(event,'${dateStr}',this)">
+      <div class="calendar-day-num">${d}</div>
+      ${dayNews.slice(0,3).map(n=>`<div class="calendar-event ${n.status==='scheduled'?'scheduled':n.status==='draft'?'draft':'published'}" draggable="true" data-id="${n.id}" ondragstart="dragStartEvent(event)" onclick="event.stopPropagation();window.location.href='../news/?edit=${n.id}'" title="${escapeHtml(n.title)}">${escapeHtml(n.title.slice(0,20))}${n.title.length>20?'…':''}</div>`).join('')}
+      ${dayNews.length>3?`<div style="font-size:10px;color:var(--muted);padding:2px 6px;font-weight:600;">+${dayNews.length-3}</div>`:''}
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function dragStartEvent(e){draggedNewsId=e.target.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedNewsId);}
+async function dropOnDay(e,dateStr,el){
+  e.preventDefault();el.classList.remove('dragover');
+  const id=draggedNewsId||e.dataTransfer.getData('text/plain');
+  if(!id)return;
+  const newDate=new Date(dateStr+'T12:00:00').toISOString();
+  const {error}=await db.from('news').update({published_at:newDate}).eq('id',id);
+  if(error){toast('Ошибка','error');return;}
+  toast('Дата изменена');draggedNewsId=null;renderCalendar();
+}
+</script>
+</body>
+</html>
