@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="login-wrap" id="loginScreen">
+<div class="login-wrap">
   <div class="login-left">
     <div class="login-brand"><img src="../file/main.png" alt="Метро New"><div class="login-brand-text">Метро New<em>International</em></div></div>
     <div class="login-hero"><h1>Панель управления редакцией</h1><p>Войдите, чтобы управлять новостями.</p></div>
@@ -62,7 +62,7 @@ async function handleLogin(e){
       document.getElementById('twofaLoginCode').focus();
       return;
     }
-    window.location.href='news.html';
+    window.location.href='news/index.html';
   }catch(err){errEl.textContent=err.message;errEl.classList.add('active');}
   finally{btn.disabled=false;btn.textContent='Войти';}
 }
@@ -82,18 +82,17 @@ async function verify2FALogin(e){
     if(chErr)throw chErr;
     const {error:vErr}=await db.auth.mfa.verify({factorId,challengeId:challenge.id,code});
     if(vErr)throw new Error('Неверный код');
-    window.location.href='news.html';
+    window.location.href='news/index.html';
   }catch(err){errEl.textContent=err.message;errEl.classList.add('active');}
   finally{btn.disabled=false;btn.textContent='Подтвердить';}
 }
 
-// Если уже вошёл — сразу в news.html
 (async()=>{
   const {data:{session}}=await db.auth.getSession();
   if(!session)return;
   const {data:aal}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
   if(aal?.currentLevel==='aal2'||aal?.nextLevel!=='aal2'){
-    window.location.href='news.html';
+    window.location.href='news/index.html';
   }
 })();
 </script>
