@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Медиа — Админ-панель</title>
+<link rel="icon" href="../../file/main.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="admin-wrap active">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><img src="../../file/main.png" alt="Метро New"><div class="sidebar-brand-text">Метро New<em>Админ-панель</em></div></div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-item" href="../news/">Создать</a>
+      <a class="sidebar-item" href="../published/">Опубликованные</a>
+      <a class="sidebar-item" href="../calendar/">Календарь</a>
+      <a class="sidebar-item active" href="../media/">Медиа</a>
+      <a class="sidebar-item" href="../videos/">Видео</a>
+      <a class="sidebar-item" href="../analytics/">Аналитика</a>
+      <a class="sidebar-item" href="../trash/">Корзина</a>
+      <button class="sidebar-item" onclick="open2FASettings()">2FA</button>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="sidebar-item" href="../../">На сайт</a>
+      <button class="sidebar-item sidebar-logout" onclick="logout()">Выйти</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar"><h1>Медиа</h1></div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="adminContent"></div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-overlay" id="twofaModal">
+  <div class="modal-preview" style="max-width:480px;">
+    <button class="modal-preview-close" onclick="document.getElementById('twofaModal').classList.remove('open')">✕</button>
+    <div class="preview-content" id="twofaContent"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="../auth.js"></script>
+<script>
+let allMediaCache=[],mediaUsageCache={},currentMediaFolder='all',selectedMediaIds=new Set();
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+(async()=>{
+  const session=await requireAuth();
+  if(!session)return;
+  loadMediaTab();
+})();
+
+async function loadMediaTab(){
+  document.getElementById('adminContent').innerHTML=`
+    <div class="toolbar">
+      <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="mediaSearch" placeholder="Поиск по имени..." oninput="renderMediaGrid()"></div>
+      <button class="toolbar-btn danger" id="bulkMediaDeleteBtn" onclick="bulkDeleteMedia()" disabled>Удалить (<span id="bulkMediaCount">0</span>)</button>
+      <button class="toolbar-btn" onclick="selectedMediaIds.clear();renderMediaGrid()">Снять выбор</button>
+    </div>
+    <div class="media-dropzone" id="mediaDropzone" onclick="document.getElementById('mediaUpload').click()">
+      <div class="media-dropzone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <h3>Перетащите файлы сюда</h3><p>или нажмите — JPG, PNG, WEBP, GIF</p>
+      <input type="file" id="mediaUpload" accept="image/*" multiple onchange="handleMediaUpload(this.files)">
+    </div>
+    <div class="media-folders" id="mediaFolders"></div>
+    <div class="media-grid" id="mediaGrid"><div class="empty" style="grid-column:1/-1;"><p>Загрузка...</p></div></div>`;
+  const dz=document.getElementById('mediaDropzone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)handleMediaUpload(e.dataTransfer.files);});
+  await loadMediaUsage();await loadMedia();
+}
+
+async function loadMediaUsage(){
+  try{
+    const {data:news}=await db.from('news').select('id, title, cover_image, author_avatar');
+    mediaUsageCache={};
+    (news||[]).forEach(n=>{
+      if(n.cover_image){if(!mediaUsageCache[n.cover_image])mediaUsageCache[n.cover_image]=[];mediaUsageCache[n.cover_image].push({id:n.id,title:n.title,type:'обложка'});}
+      if(n.author_avatar){if(!mediaUsageCache[n.author_avatar])mediaUsageCache[n.author_avatar]=[];mediaUsageCache[n.author_avatar].push({id:n.id,title:n.title,type:'аватар'});}
+    });
+  }catch(e){}
+}
+
+async function loadMedia(){
+  try{
+    const {data,error}=await db.storage.from('news-images').list('',{limit:1000,sortBy:{column:'created_at',order:'desc'}});
+    if(error)throw error;
+    const folderMap={};
+    allMediaCache=(data||[]).filter(f=>f.name&&!f.name.endsWith('/')).map(f=>{
+      const d=f.created_at?new Date(f.created_at):new Date();
+      const folder=d.toISOString().slice(0,7);
+      if(!folderMap[folder])folderMap[folder]=0;
+      folderMap[folder]++;
+      const {data:u}=db.storage.from('news-images').getPublicUrl(f.name);
+      return {name:f.name,url:u.publicUrl,size:f.metadata?.size||0,created_at:f.created_at,folder,usage:mediaUsageCache[u.publicUrl]||[]};
+    });
+    renderMediaFolders(folderMap);renderMediaGrid();
+  }catch(err){document.getElementById('mediaGrid').innerHTML='<div class="empty" style="grid-column:1/-1;"><h3>Ошибка</h3></div>';}
+}
+
+function renderMediaFolders(folderMap){
+  const el=document.getElementById('mediaFolders');if(!el)return;
+  const folders=Object.keys(folderMap).sort().reverse();
+  let html=`<button class="media-folder ${currentMediaFolder==='all'?'active':''}" onclick="selectMediaFolder('all')">Все <span class="media-folder-count">${allMediaCache.length}</span></button>`;
+  folders.forEach(f=>{html+=`<button class="media-folder ${currentMediaFolder===f?'active':''}" onclick="selectMediaFolder('${f}')">${f} <span class="media-folder-count">${folderMap[f]}</span></button>`;});
+  el.innerHTML=html;
+}
+function selectMediaFolder(f){currentMediaFolder=f;renderMediaFolders(Object.fromEntries(Object.entries(allMediaCache.reduce((a,m)=>{a[m.folder]=(a[m.folder]||0)+1;return a;},{}))));renderMediaGrid();}
+
+function renderMediaGrid(){
+  const grid=document.getElementById('mediaGrid');if(!grid)return;
+  const q=(document.getElementById('mediaSearch')?.value||'').toLowerCase().trim();
+  let list=[...allMediaCache];
+  if(currentMediaFolder!=='all')list=list.filter(m=>m.folder===currentMediaFolder);
+  if(q)list=list.filter(m=>m.name.toLowerCase().includes(q));
+  if(!list.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><h3>Нет фото</h3></div>';updateMediaBulkUI();return;}
+  grid.innerHTML=list.map(m=>{
+    const used=m.usage&&m.usage.length>0;const sizeKb=Math.round((m.size||0)/1024);
+    const sel=selectedMediaIds.has(m.name);
+    return `<div class="media-item ${sel?'selected':''}"><div class="media-item-img" onclick="copyMediaUrl('${escapeHtml(m.url)}')"><img src="${escapeHtml(m.url)}" alt="" loading="lazy">${used?`<span class="media-item-usage">Используется ${m.usage.length}</span>`:'<span class="media-item-unused">Свободно</span>'}<input type="checkbox" class="media-item-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleMediaSelect('${escapeHtml(m.name)}',this.checked)"><div class="media-item-overlay"><button class="media-action-btn danger" onclick="event.stopPropagation(); deleteMedia('${escapeHtml(m.name)}', ${used})" title="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button></div></div><div class="media-item-info"><div class="media-item-name">${escapeHtml(m.name)}</div><div class="media-item-meta">${sizeKb} КБ</div></div></div>`;
+  }).join('');
+  updateMediaBulkUI();
+}
+
+function toggleMediaSelect(name,checked){if(checked)selectedMediaIds.add(name);else selectedMediaIds.delete(name);updateMediaBulkUI();renderMediaGrid();}
+function updateMediaBulkUI(){const b=document.getElementById('bulkMediaDeleteBtn');const c=document.getElementById('bulkMediaCount');if(!b||!c)return;c.textContent=selectedMediaIds.size;b.disabled=selectedMediaIds.size===0;}
+
+async function bulkDeleteMedia(){
+  if(!selectedMediaIds.size)return;
+  if(!confirm(`Удалить ${selectedMediaIds.size} фото?`))return;
+  const {error}=await db.storage.from('news-images').remove([...selectedMediaIds]);
+  if(error){toast('Ошибка','error');return;}
+  toast(`Удалено: ${selectedMediaIds.size}`);selectedMediaIds.clear();await loadMedia();
+}
+
+async function handleMediaUpload(files){
+  if(!files||!files.length)return;let done=0;
+  for(const file of files){
+    try{
+      const ext=file.name.split('.').pop().toLowerCase();
+      if(!['jpg','jpeg','png','webp','gif','svg'].includes(ext)){toast('Пропущен: '+file.name,'error');continue;}
+      const compressed=await compressImage(file);
+      const name=`${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const {error}=await db.storage.from('news-images').upload(name,compressed);
+      if(error){toast('Ошибка: '+file.name,'error');continue;}
+      done++;
+    }catch(e){}
+  }
+  if(done)toast(`Загружено: ${done}/${files.length}`);
+  await loadMedia();
+}
+
+function compressImage(file,maxWidth=1920,maxSizeKB=300){
+  return new Promise((resolve)=>{
+    if(file.type==='image/svg+xml'||file.type==='image/gif'){resolve(file);return;}
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      const img=new Image();
+      img.onload=()=>{
+        let {width,height}=img;
+        if(width>maxWidth){height=Math.round(height*maxWidth/width);width=maxWidth;}
+        const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,width,height);
+        let quality=0.85;
+        const tryCompress=()=>{canvas.toBlob((blob)=>{if(!blob){resolve(file);return;}if(blob.size/1024>maxSizeKB&&quality>0.4){quality-=0.1;tryCompress();}else{const ext=file.name.split('.').pop().toLowerCase();resolve(new File([blob],file.name,{type:blob.type||`image/${ext}`}));}},'image/jpeg',quality);};
+        tryCompress();
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function copyMediaUrl(url){try{await navigator.clipboard.writeText(url);toast('URL скопирован');}catch(e){prompt('URL:',url);}}
+async function deleteMedia(name,used){if(used&&!confirm('Фото используется. Удалить всё равно?'))return;if(!used&&!confirm('Удалить фото?'))return;const {error}=await db.storage.from('news-images').remove([name]);if(error){toast('Ошибка','error');return;}toast('Удалено');await loadMedia();}
+</script>
+</body>
+</html>
